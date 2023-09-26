@@ -1,0 +1,194 @@
+@font-face {
+    font-family: RotisSerif;
+    src: url(../font/RotisSerif.ttf);
+}
+
+body RotisSerif{ 
+    display:flex; 
+    flex-direction:column; 
+    font-family: RotisSerif;
+}
+
+.mainText {
+    text-align: center;
+    margin-left: 20%;
+    margin-right:20%;
+}
+
+.reward {
+    color: #1cb81c;
+}
+.goalProgress {
+    list-style-type: none;
+}
+
+.money {
+    color: green;
+}
+.button {
+    background-color: #4CAF50;
+    /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    margin-bottom: 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 6px;
+    box-shadow: 2px 2px 5px rgb(76, 76, 76);
+}
+
+.redeem {
+    background-color: #f58024;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 6px;
+    box-shadow: 2px 2px 5px rgb(76, 76, 76);
+}
+
+#parentHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#createChild img {
+    width: 75px;
+}
+
+h3 {
+    font-weight: bold;
+}
+
+.childPanel {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#header {
+    background-color: #0E6DAD;
+    width: 100%;
+    height: 100px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#header #logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 20px;
+}
+
+#header #logo img {
+    width: 60px;
+}
+
+#header #buttons {
+    margin-right: 40px;
+}
+#header #buttons > * {
+    margin: 10px;
+}
+
+#header .button {
+    background-color: #1684C3;
+    box-shadow: 5px 5px 5px black;
+}
+
+#footer {
+    margin-top: auto; 
+    min-height: 50px;
+    background-color: #0E6DAD;
+    color: white;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#footer p {
+    margin: 10px;
+}
+
+#pageName {
+    font-size: 40px;
+    text-align: center;
+}
+
+#id_register_link {
+    font-style: italic;
+    font-size: 30px;
+    color:black;
+    position: absolute;
+    right: 10px;
+}
+
+#id_login_link {
+    font-style: italic;
+    font-size: 30px;
+    color:black;
+    float:right;
+    margin-left: 20px;
+}
+
+table {
+    color: black;
+    font-size: 30px; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.box {
+    border: 2px solid #0E6DAD;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    background-color: rgba(217, 217, 217, 50)
+}
+.box li {
+    font-size: 20px;
+}
+
+#badges {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+#badges img {
+    width: 200px;
+}
+
+input {
+    width: 320px;
+    font-size: 30px;
+}
+
+.formButton {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #4C84C5;
+    border: 1px solid #0E6DAD;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 6px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

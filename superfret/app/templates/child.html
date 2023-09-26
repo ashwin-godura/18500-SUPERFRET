@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Welcome, {{ child.first_name }}!<h2>
+
+<h3>Saved Amount: <span class="money">${{ child.profile.savings }}</span></h3>
+<h3>Available Balance: <span class="money">${{ child.profile.balance }}</span></h3>
+
+<a href="{% url 'addGoal' child.id%}"><button class="button">Add Goal</button></a>
+
+<div class="box">
+    <h3>Current Chores:</h4>
+    <ul>
+        {% for currentChore in choresTodo %}
+        <li>{{ currentChore.chore }} - <span class="money">${{ currentChore.reward }}</span></li>
+        
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="box">
+    <h3>Current Goals:</h3>
+    <ul>
+        {% for goal in goalsTodo %}
+            <li>{{ goal.goal.goal }} {{ goal.goal.cost }} 
+                {% if child.profile.balance > goal.goal.cost %} 
+                    <a href="{% url 'completeGoal' goal.goal.id%}"><button class="redeem">Complete Goal</button></a> 
+                {% endif %}
+            </li>
+            <br>
+            <li class="goalProgress">
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: {{goal.progress}}%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ goal.progress }}</div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="box">
+    <h3>Completed Chores:</h4>
+    <ul>
+        {% for completedChore in choresComplete %}
+            <li>{{ completedChore.chore }} - <span class="">${{ completedChore.reward }}</span></li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="box">
+    <h3>Completed Goals:</h4>
+    <ul>
+        {% for completedGoal in goalsComplete %}
+            <li>{{ completedGoal.goal }} - ${{ completedGoal.cost }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<h3>Badges</h3>
+<div id="badges">
+    <img src="../static/images/badges/MicrosoftTeams-image (2).png">
+    <img src="../static/images/badges/MicrosoftTeams-image (3).png">
+    <img src="../static/images/badges/MicrosoftTeams-image (4).png">
+    <img src="../static/images/badges/MicrosoftTeams-image (5).png">
+    <img src="../static/images/badges/MicrosoftTeams-image.png">
+    <img src="../static/images/badges/MicrosoftTeams-image (6).png">
+    <img src="../static/images/badges/MicrosoftTeams-image (1).png">
+    <img src="../static/images/badges/MicrosoftTeams-image (7).png">
+    <img src="../static/images/badges/MicrosoftTeams-image (8).png">
+    <img src="../static/images/badges/MicrosoftTeams-image (9).png">
+</div>
+
+{% endblock %}
