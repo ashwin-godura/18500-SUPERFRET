@@ -17,6 +17,8 @@ def getHome(request):
      staticMidiFiles = StaticMidiFile.objects.all()
      midiFiles = MidiFile.objects.all()
 
+     print(staticMidiFiles)
+
      if request.method == 'GET':
         context['StaticMidiFileForm'] = AddStaticFileForm()
         context['MidiFileForm'] = AddDynamicFileForm()
@@ -28,24 +30,30 @@ def addStatic(request):
    if request.method == 'GET':
       return redirect(reverse('home'))
      
-   form = StaticMidiFileForm(request.POST)
+   form = AddStaticFileForm(request.POST)
 
    if not form.is_valid():
        return redirect(reverse('home'))
 
-   form.save()
+   file = StaticMidiFile()
+   file.name = form.name
+   file.file = form.file
+   file.save()
    return redirect(reverse('home'))
 
-def addStatic(request):  
+def addDynamic(request):  
    if request.method == 'GET':
       return redirect(reverse('home'))
      
-   form = MidiFileForm(request.POST)
+   form = AddDynamicFileForm(request.POST)
 
    if not form.is_valid():
        return redirect(reverse('home'))
 
-   form.save()
+   file = MidiFile()
+   file.name = form.name
+   file.file = form.file
+   file.save()
    return redirect(reverse('home'))
 
 

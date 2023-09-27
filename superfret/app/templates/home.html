@@ -16,7 +16,11 @@
             <h2>Static List</h2>
             <input type="text" id="staticSearch" placeholder="Search Static List">
             <ul id="staticList">
-                <!-- Static list items will be generated here -->
+                {% for file in StaticMidiFiles %} 
+                <li>
+                    {file.name}
+                </li>
+                {% endfor %}
             </ul>
         </section>
         <section>
