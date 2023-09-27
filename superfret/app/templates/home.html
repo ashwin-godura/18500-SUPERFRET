@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superfret</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Welcome to Superfret</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Static List</h2>
+            <input type="text" id="staticSearch" placeholder="Search Static List">
+            <ul id="staticList">
+                <!-- Static list items will be generated here -->
+            </ul>
+        </section>
+        <section>
+            <h2>Dynamic List</h2>
+            <input type="text" id="dynamicSearch" placeholder="Search Dynamic List">
+            <ul id="dynamicList">
+                <!-- Dynamic list items will be generated here -->
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <button id="addStaticButton" onclick="openAddForm('/addStatic')">Add to Static List</button>
+        <button id="addDynamicButton" onclick="openAddForm('/addDynamic')">Add to Dynamic List</button>
+    </footer>
+
+    <!-- Modal for adding MIDI file -->
+    <div id="addFormModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddForm()">&times;</span>
+            <h2>Add MIDI File</h2>
+            <form action="#" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="midiFile" accept=".midi, .mid">
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddForm(action) {
+            document.getElementById('addFormModal').style.display = 'block';
+            document.querySelector('form').action = action;
+        }
+
+        function closeAddForm() {
+            document.getElementById('addFormModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
