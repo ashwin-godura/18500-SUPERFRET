@@ -28,8 +28,8 @@
         </section>
     </main>
     <footer>
-        <button id="addStaticButton" onclick="openAddForm('/addStatic')">Add to Static List</button>
-        <button id="addDynamicButton" onclick="openAddForm('/addDynamic')">Add to Dynamic List</button>
+        <button id="addStaticButton" onclick="openStaticAddForm('/addStatic')">Add to Static List</button>
+        <button id="addDynamicButton" onclick="openDynamicAddForm('/addDynamic')">Add to Dynamic List</button>
     </footer>
 
     <!-- Modal for adding MIDI file -->
@@ -37,16 +37,24 @@
         <div class="modal-content">
             <span class="close" onclick="closeAddForm()">&times;</span>
             <h2>Add MIDI File</h2>
-            <form action="#" method="post" enctype="multipart/form-data">
+            <form method="POST">
+                <input type="hidden" name="csrfmiddlewaretoken" value="g8lWhbHYKBmaMkdVQoqRbEVWwVEmA2Y8eJRk4MunL28hB20IFN9gkMWmMGPkemoq">
+                <table>
+                    {{StaticMidiFileForm}}
+                </table>
+                <button type="submit" class="formButton">submit</button>
                 {% csrf_token %}
-                <input type="file" name="midiFile" accept=".midi, .mid">
-                <button type="submit">Upload</button>
             </form>
         </div>
     </div>
 
     <script>
-        function openAddForm(action) {
+        function openStaticAddForm(action) {
+            document.getElementById('addFormModal').style.display = 'block';
+            document.querySelector('form').action = action;
+        }
+
+        function openDynamicAddForm(action) {
             document.getElementById('addFormModal').style.display = 'block';
             document.querySelector('form').action = action;
         }
