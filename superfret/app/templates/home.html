@@ -6,6 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Superfret</title>
     <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+    <style>
+        #staticList li {
+            list-style-type: none;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #staticList li button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -18,7 +42,8 @@
             <ul id="staticList">
                 {% for file in StaticMidiFiles %} 
                 <li>
-                    {file.name}
+                    <span>{{file.name}}</span>
+                    <button onclick="startFile('{{file.name}}')">Start</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -32,16 +57,15 @@
         </section>
     </main>
     <footer>
-        <button id="addStaticButton" onclick="openStaticAddForm('/addStatic')">Add to Static List</button>
-        <button id="addDynamicButton" onclick="openDynamicAddForm('/addDynamic')">Add to Dynamic List</button>
+        <button id="addStaticButton" onclick="openStaticAddForm()">Add to Static List</button>
     </footer>
 
     <!-- Modal for adding MIDI file -->
-    <div id="addFormModal" class="modal">
+    <div id="addStaticFormModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAddForm()">&times;</span>
             <h2>Add MIDI File</h2>
-            <form method="POST">
+            <form method="POST" action="{% url 'addStatic' %}" enctype="multipart/form-data">
                 <input type="hidden" name="csrfmiddlewaretoken" value="g8lWhbHYKBmaMkdVQoqRbEVWwVEmA2Y8eJRk4MunL28hB20IFN9gkMWmMGPkemoq">
                 <table>
                     {{StaticMidiFileForm}}
@@ -52,20 +76,44 @@
         </div>
     </div>
 
+
+    {% if activefile %}
+        <div id="popup-window">
+            <h1>Pop-up Window</h1>
+            <p>This is a pop-up window.</p>
+            <button id="close-button">Close</button>
+        </div>
+    {% endif %}
+
     <script>
         function openStaticAddForm(action) {
-            document.getElementById('addFormModal').style.display = 'block';
-            document.querySelector('form').action = action;
-        }
-
-        function openDynamicAddForm(action) {
-            document.getElementById('addFormModal').style.display = 'block';
-            document.querySelector('form').action = action;
+            document.getElementById('addStaticFormModal').style.display = 'block';
         }
 
         function closeAddForm() {
-            document.getElementById('addFormModal').style.display = 'none';
+            document.getElementById('addStaticFormModal').style.display = 'none';
+        }
+
+        function startFile(filename) {
+            window.location.href = '/startfile/' + filename;
+            showPopup()
+        }
+        function showPopup() {
+            var popupWindow = document.getElementById("popup-window");
+            popupWindow.style.display = 'block';
+            return false;
+        }
+    
+        function closePopup() {
+            var popupWindow = document.getElementById("popup-window");
+            popupWindow.style.display = 'none';
+        }
+    
+        function stopFile() {
+            window.location.href = '/stopfile'
+            closePopup(); // Close the pop-up after stopping
         }
     </script>
+
 </body>
 </html>

@@ -19,6 +19,9 @@ from app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('home/', views.getHome, ),
-    path('', views.getHome, )
+    path('home/', views.getHome, name='home'),
+    path('', views.getHome, ),
+    path('addStatic', views.addStatic, name='addStatic'),
+    path('startfile/<str:name>/', views.startfile, name='startfile'),
+    path('stopfile', views.stopfile, name='stopfile'),
 ]
