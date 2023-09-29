@@ -79,9 +79,9 @@
 
     {% if activefile %}
         <div id="popup-window">
-            <h1>Pop-up Window</h1>
+            <h1>File Activated...</h1>
             <p>This is a pop-up window.</p>
-            <button id="close-button">Close</button>
+            <button id="close-button" onclick=stopFile()>Stop</button>
         </div>
     {% endif %}
 
@@ -98,20 +98,11 @@
             window.location.href = '/startfile/' + filename;
             showPopup()
         }
-        function showPopup() {
-            var popupWindow = document.getElementById("popup-window");
-            popupWindow.style.display = 'block';
-            return false;
-        }
-    
-        function closePopup() {
-            var popupWindow = document.getElementById("popup-window");
-            popupWindow.style.display = 'none';
-        }
     
         function stopFile() {
             window.location.href = '/stopfile'
-            closePopup(); // Close the pop-up after stopping
+            var popupWindow = document.getElementById("popup-window");
+            popupWindow.style.display = 'none';
         }
     </script>
 
