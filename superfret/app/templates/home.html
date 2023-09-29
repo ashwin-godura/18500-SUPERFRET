@@ -16,19 +16,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        #staticList li button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -37,38 +24,45 @@
     </header>
     <main>
         <section>
-            <h2>Static List</h2>
-            <input type="text" id="staticSearch" placeholder="Search Static List">
+            <h2>Scales List</h2>
+            <input type="text" placeholder="Search Scale List">
             <ul id="staticList">
-                {% for file in StaticMidiFiles %} 
+                {% for file in ScaleMidiFiles %} 
                 <li>
                     <span>{{file.name}}</span>
-                    <button onclick="startFile('{{file.name}}')">Start</button>
+                    <button id="start-button" onclick="startFile('{{file.name}}')">Start</button>
+                    <button id="delete-button" onclick="deleteFile('{{file.name}}')">Delete</button>
                 </li>
                 {% endfor %}
             </ul>
         </section>
         <section>
-            <h2>Dynamic List</h2>
-            <input type="text" id="dynamicSearch" placeholder="Search Dynamic List">
-            <ul id="dynamicList">
-                <!-- Dynamic list items will be generated here -->
+            <h2>Songs List</h2>
+            <input type="text" id="dynamicSearch" placeholder="Search Song List">
+            <ul id="staticList">
+                {% for file in SongMidiFiles %} 
+                <li>
+                    <span>{{file.name}}</span>
+                    <button id="start-button" onclick="startFile('{{file.name}}')">Start</button>
+                    <button id="delete-button" onclick="deleteFile('{{file.name}}')">Delete</button>
+                </li>
+                {% endfor %}
             </ul>
         </section>
     </main>
     <footer>
-        <button id="addStaticButton" onclick="openStaticAddForm()">Add to Static List</button>
+        <button onclick="openAddForm()">Add to Scales List</button>
     </footer>
 
     <!-- Modal for adding MIDI file -->
-    <div id="addStaticFormModal" class="modal">
+    <div id="addFormModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAddForm()">&times;</span>
             <h2>Add MIDI File</h2>
-            <form method="POST" action="{% url 'addStatic' %}" enctype="multipart/form-data">
+            <form method="POST" action="{% url 'addFile' %}" enctype="multipart/form-data">
                 <input type="hidden" name="csrfmiddlewaretoken" value="g8lWhbHYKBmaMkdVQoqRbEVWwVEmA2Y8eJRk4MunL28hB20IFN9gkMWmMGPkemoq">
                 <table>
-                    {{StaticMidiFileForm}}
+                    {{MidiFileForm}}
                 </table>
                 <button type="submit" class="formButton">submit</button>
                 {% csrf_token %}
@@ -77,26 +71,31 @@
     </div>
 
 
+
     {% if activefile %}
         <div id="popup-window">
             <h1>File Activated...</h1>
-            <p>This is a pop-up window.</p>
+            <p>Do your thing!</p>
             <button id="close-button" onclick=stopFile()>Stop</button>
         </div>
     {% endif %}
 
     <script>
-        function openStaticAddForm(action) {
-            document.getElementById('addStaticFormModal').style.display = 'block';
+        function openAddForm(action) {
+            document.getElementById('addFormModal').style.display = 'block';
         }
 
         function closeAddForm() {
-            document.getElementById('addStaticFormModal').style.display = 'none';
+            document.getElementById('addFormModal').style.display = 'none';
         }
 
         function startFile(filename) {
             window.location.href = '/startfile/' + filename;
             showPopup()
+        }
+
+        function deleteFile(filename) {
+            window.location.href = '/deletefile/' + filename;
         }
     
         function stopFile() {

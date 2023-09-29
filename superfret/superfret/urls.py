@@ -21,7 +21,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', views.getHome, name='home'),
     path('', views.getHome, ),
-    path('addStatic', views.addStatic, name='addStatic'),
+    path('addFile', views.addFile, name='addFile'),
     path('startfile/<str:name>/', views.startfile, name='startfile'),
+    path('deletefile/<str:name>/', views.deletefile, name='deletefile'),
     path('stopfile', views.stopfile, name='stopfile'),
 ]

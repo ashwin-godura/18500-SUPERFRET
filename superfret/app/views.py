@@ -8,13 +8,14 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from app.forms import AddStaticFileForm
-from app.models import StaticMidiFile
+from app.forms import AddFileForm
+from app.models import MidiFile
+import os
 
 def getHome(request):  
    context = {}
 
-   staticMidiFiles = StaticMidiFile.objects.all()
+   MidiFiles = MidiFile.objects.all()
 
    file = findactivefile()
 
@@ -23,31 +24,44 @@ def getHome(request):
    else:
       context['activefile'] = False
 
-   context['StaticMidiFileForm'] = AddStaticFileForm()
-   context['StaticMidiFiles'] = staticMidiFiles
+   context['MidiFileForm'] = AddFileForm()
+   context['ScaleMidiFiles'] = MidiFiles.filter(type="scale")
+   context['SongMidiFiles'] = MidiFiles.filter(type="song")
    return render(request, 'home.html', context)
 
-def addStatic(request):  
+def addFile(request):  
    if request.method == 'GET':
       return redirect(reverse('home'))
      
-   form = AddStaticFileForm(request.POST, request.FILES)
+   form = AddFileForm(request.POST, request.FILES)
    
    print(str(form))
 
-   file = StaticMidiFile()
+   file = MidiFile()
    file.name = form.cleaned_data['name']
    file.file = form.cleaned_data['file']
+   file.type = form.cleaned_data['type']
    file.save()
    print("saved the file")
    return redirect(reverse('home'))
 
 def startfile(request, name):
-   file = StaticMidiFile.objects.all().filter(name=name)[0]
+   file = findactivefile()
+   if file is not None:
+      return getHome(request)
+   
+   file = MidiFile.objects.all().filter(name=name)[0]
    file.active = True
    file.save()
 
    return getHome(request)
+
+def deletefile(request, name):
+   file = MidiFile.objects.all().filter(name=name)[0]
+   os.remove(str(file.file))
+   file.delete()
+   return getHome(request)
+
 
 def stopfile(request):
    file = findactivefile()
@@ -57,17 +71,9 @@ def stopfile(request):
    return getHome(request)
 
 
-
 def findactivefile():
-   files = StaticMidiFile.objects.all()
+   files = MidiFile.objects.all()
    for file in files:
       if file.active:
          return file
    return None
-     
-   # search regular midi files too  
-
-   # files = MidiFile.objects.all()
-   # for file in files:
-   #    if file.active:
-   #       file.active = False
