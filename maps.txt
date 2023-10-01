@@ -1,0 +1,64 @@
+#include "notes.h"
+
+uint8_t Musical_note_TO_LED_idx[128][2] = {
+
+  /* E String */ {_E , },   
+    /* Fret 1 */ {_F , },   
+    /* Fret 2 */ {_Fsh , },   
+    /* Fret 3 */ {_G , },   
+    /* Fret 4 */ {_Afl , },   
+    /* Fret 5 */ {_A , },   
+    /* Fret 6 */ {_Bb , }   
+    /* Fret 7 */ {_B , },   
+    /* Fret 8 */ {_C , },   
+    /* Fret 9 */ {_Dfl , },   
+    /* Fret 1 */ {_D , },   
+    /* Fret 1 */ {_Efl , },   
+    /* Fret 1 */ {_E, }   
+    /* Fret 1 */ {_F , },  
+    
+  /* E String */ {_E , },   
+    /* Fret 1 */ {_F , },   
+    /* Fret 2 */ {_Fsh , },   
+    /* Fret 3 */ {_G , },   
+    /* Fret 4 */ {_Afl , },   
+    /* Fret 5 */ {_A , },   
+    /* Fret 6 */ {_Bb , }   
+    /* Fret 7 */ {_B , },   
+    /* Fret 8 */ {_C , },   
+    /* Fret 9 */ {_Dfl , },   
+    /* Fret 1 */ {_D , },   
+    /* Fret 1 */ {_Efl , },   
+    /* Fret 1 */ {_E, }   
+    /* Fret 1 */ {_F , },   
+    
+  /* E String */ {_E , },   
+    /* Fret 1 */ {_F , },   
+    /* Fret 2 */ {_Fsh , },   
+    /* Fret 3 */ {_G , },   
+    /* Fret 4 */ {_Afl , },   
+    /* Fret 5 */ {_A , },   
+    /* Fret 6 */ {_Bb , }   
+    /* Fret 7 */ {_B , },   
+    /* Fret 8 */ {_C , },   
+    /* Fret 9 */ {_Dfl , },   
+    /* Fret 1 */ {_D , },   
+    /* Fret 1 */ {_Efl , },   
+    /* Fret 1 */ {_E, }   
+    /* Fret 1 */ {_F , },   
+    
+  /* E String */ {_E , },   
+    /* Fret 1 */ {_F , },   
+    /* Fret 2 */ {_Fsh , },   
+    /* Fret 3 */ {_G , },   
+    /* Fret 4 */ {_Afl , },   
+    /* Fret 5 */ {_A , },   
+    /* Fret 6 */ {_Bb , }   
+    /* Fret 7 */ {_B , },   
+    /* Fret 8 */ {_C , },   
+    /* Fret 9 */ {_Dfl , },   
+    /* Fret 1 */ {_D , },   
+    /* Fret 1 */ {_Efl , },   
+    /* Fret 1 */ {_E, }   
+    /* Fret 1 */ {_F , },   
+}
