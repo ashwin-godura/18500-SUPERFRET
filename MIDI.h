@@ -1,7 +1,7 @@
 
 #include <cassert>
 
-uint8_t MIDI[485] = {
+uint8_t MIDI[488] = {
   0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x01, 0x00, 0x03, 0x01, 0x80, 0x4D, 0x54, 0x72, 0x6B, 0x00, 0x00, 0x01, 0xD2, 0x00, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08,
   0x00, 0xFF, 0x51, 0x03, 0x08, 0x52, 0xAE, 0x00, 0xFF, 0x03, 0x15, 0x45, 0x6C, 0x65, 0x63, 0x2E, 0x20, 0x50, 0x69, 0x61, 0x6E, 0x6F, 0x20, 0x28, 0x43, 0x6C, 0x61, 0x73, 0x73, 0x69,
   0x63, 0x29, 0x00, 0xC0, 0x00, 0x00, 0x90, 0x3C, 0x32, 0x81, 0x40, 0x80, 0x3C, 0x00, 0x81, 0x40, 0x90, 0x3C, 0x32, 0x81, 0x40, 0x80, 0x3C, 0x00, 0x81, 0x40, 0x90, 0x43, 0x3, 0x81,
@@ -18,7 +18,7 @@ uint8_t MIDI[485] = {
   0x40, 0x80, 0x45, 0x00, 0x81, 0x40, 0x90, 0x45, 0x32, 0x81, 0x40, 0x80, 0x45, 0x00, 0x81, 0x40, 0x90, 0x43, 0x32, 0x83, 0x00, 0x80, 0x43, 0x00, 0x83, 0x00, 0x90, 0x41, 0x32, 0x81,
   0x40, 0x80, 0x41, 0x00, 0x81, 0x40, 0x90, 0x41, 0x32, 0x81, 0x40, 0x80, 0x41, 0x00, 0x81, 0x40, 0x90, 0x40, 0x32, 0x81, 0x40, 0x80, 0x40, 0x00, 0x81, 0x40, 0x90, 0x40, 0x32, 0x81,
   0x40, 0x80, 0x40, 0x00, 0x81, 0x40, 0x90, 0x3E, 0x32, 0x81, 0x40, 0x80, 0x3E, 0x00, 0x81, 0x40, 0x90, 0x3E, 0x32, 0x81, 0x40, 0x80, 0x3E, 0x00, 0x81, 0x40, 0x90, 0x3C, 0x32, 0x83,
-  0x00, 0x80, 0x3C, 0x00, 0x00
+  0x00, 0x80, 0x3C, 0x00, 0x00, 0xFF, 0x2F, 0x00
 };
 
 typedef struct {
@@ -47,7 +47,7 @@ bool found_Time_Signature(uint8_t* buff) {
 }
 
 bool found_Set_Tempo_Event(uint8_t* buff) {
-  return (buff[0] == 0xFF) and (buff[1] == 0x51) and (buff[1] == 0x03);
+  return (buff[0] == 0xFF) and (buff[1] == 0x51) and (buff[2] == 0x03);
 }
 
 bool found_Track_Name(uint8_t* buff) {
@@ -55,18 +55,18 @@ bool found_Track_Name(uint8_t* buff) {
 }
 
 bool found_Program_Change(uint8_t* buff) {
-  return (buff[0] & 0xF0) == 0xC;
+  return (buff[0] & 0xF0) == 0xC0;
 }
 bool found_Note_ON(uint8_t* buff) {
-  return (buff[0] & 0xF0) == 0x9;
+  return (buff[0] & 0xF0) == 0x90;
 }
 
 bool found_Note_OFF(uint8_t* buff) {
-  return (buff[0] & 0xF0) == 0x8;
+  return (buff[0] & 0xF0) == 0x80;
 }
 
 bool found_End_Of_Track(uint8_t* buff) {
-  return (buff[0] == 0xFF) and (buff[1] == 0x2F) and (buff[1] == 0x00);
+  return (buff[0] == 0xFF) and (buff[1] == 0x2F) and (buff[2] == 0x00);
 }
 
 uint64_t decodeVariableLengthEncoding(uint8_t* buff, int& bytes_read) {
@@ -74,13 +74,10 @@ uint64_t decodeVariableLengthEncoding(uint8_t* buff, int& bytes_read) {
 
   int i = 0;
   while (i < 8) {  // don't look at more than 8 bytes
-    uint64_t currByte = buff[0];
+    uint64_t currByte = buff[i];
     i++;
-    if (currByte & 0x80) {  // MSB is 1
-      result = (result & (~((uint64_t)0x7F))) | (currByte & 0x7F);
-    } else {
-      result = result << 1;  // accomodate MSB too (8 bits for last byte)
-      result = (result & (~((uint64_t)0xFF))) | currByte;
+    result = (result & (~((uint64_t)0x7F))) | (currByte & 0x7F);
+    if (not(currByte & 0x80)) {  // MSB is 0
       break;
     }
     result = result << 7;  // accomodate next 7 bits
@@ -125,10 +122,10 @@ void parseMIDI() {
       i += 4;  //skip 2 byte-format and 2-byte track count
 
       // should now be at the ticks quarter note field
-      int bytes_read;
-      TICKS_PER_QUARTER_NOTE = decodeVariableLengthEncoding(&MIDI[i], bytes_read);
-      assert(bytes_read == 2);  // TODO why does sasertion fail?
-      i += bytes_read;
+      TICKS_PER_QUARTER_NOTE = (((uint32_t)(MIDI[i])) << 8) | ((uint32_t)(MIDI[i + 1]));
+      parsed_ticks_per_quarter_note = true;
+
+      i += 2;
       continue;
     } else if (not parsed_MTrk) {  // look at next 4 bytes for "4D 54 72 6B" MThd sequence
       if (i + 4 <= NUM_BYTES and found_MTrk_Chunck(&MIDI[i])) {
@@ -147,8 +144,14 @@ void parseMIDI() {
       int bytes_read;
       uint64_t dt_ticks = decodeVariableLengthEncoding(&MIDI[i], bytes_read);
       i += bytes_read;
+
+
+
+
       if (found_Time_Signature(&MIDI[i])) {
         i += 3;
+        //not at the actual time signature info
+        i += 4;
         // TODO parse time signature
         continue;
       } else if (found_Set_Tempo_Event(&MIDI[i])) {
@@ -158,8 +161,14 @@ void parseMIDI() {
         continue;
       } else if (found_Track_Name(&MIDI[i])) {
         i += 2;
+        // at the byte which specifies length of track name
         uint8_t track_name_size = MIDI[i];
+
+        // at the first byte of track name
+        i += 1;
+
         // ignore track name
+
         i += track_name_size;
         continue;
       } else if (found_Program_Change(&MIDI[i])) {  // ignore this
@@ -182,6 +191,7 @@ void parseMIDI() {
       } else if (found_End_Of_Track(&MIDI[i])) {
         return;
       } else {
+        //should not reach here
         assert(false);
       }
     }
