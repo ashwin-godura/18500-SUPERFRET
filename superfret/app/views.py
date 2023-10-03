@@ -57,6 +57,10 @@ def startfile(request, name):
    return getHome(request)
 
 def deletefile(request, name):
+   file = findactivefile()
+   if file is not None:
+      return getHome(request)
+   
    file = MidiFile.objects.all().filter(name=name)[0]
    os.remove(str(file.file))
    file.delete()

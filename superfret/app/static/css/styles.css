@@ -146,6 +146,16 @@ form button[type="submit"] {
 
 }
 
+#staticList li {
+    list-style-type: none;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 #delete-button{
     background-color: #e01010;
     color: white;

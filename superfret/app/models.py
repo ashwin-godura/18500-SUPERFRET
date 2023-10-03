@@ -11,7 +11,6 @@ class MidiFile(models.Model):
     name = models.CharField(max_length=255)  # To store the file name
     file = models.FileField()  # To store the file itself
     active = models.BooleanField(default=False)
-    active = models.BooleanField(default=False)
     type = models.CharField(max_length=255)
 
     def __unicode__(self): 
