@@ -1,10 +1,10 @@
-enum class {
+enum STATE {
   WAIT_TO_START,
   RECEIVING_SONG,
   WAIT_FOR_STRUM,
   USER_EXPERIENCE,
   PAUSED
-} STATE;
+};
 
 class StateMachine {
 

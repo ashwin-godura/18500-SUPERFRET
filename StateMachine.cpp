@@ -4,7 +4,7 @@ StateMachine::StateMachine() {
   state_ = WAIT_TO_START;
 }
 
-StateMachine::update(bool file_transmission, bool strum, bool done, bool pause, bool restart) {
+void StateMachine::update(bool file_transmission, bool strum, bool done, bool pause, bool restart) {
   STATE nextState = state_;
   switch (state_) {
     case WAIT_TO_START:
