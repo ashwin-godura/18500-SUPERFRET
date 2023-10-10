@@ -1,9 +1,12 @@
+
+
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h>  // Required for 16 MHz Adafruit Trinket
 #endif
 
 #include "MIDI.h"
+#include "StateMachine.h"
 
 // extern Musical_note_TO_LED_idx[128][2];
 
@@ -17,23 +20,55 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 #define DELAYVAL 50  // Time (in milliseconds) to pause between pixels
 
+// set this to the hardware serial port you wish to use
+#define HWSERIAL Serial2
 
 double uS_per_tick;
+
+StateMachine fsm;
 
 void setup() {
   pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
   Serial.begin(9600);
   analogReadResolution(8);
 
-  parseMIDI();
+  assert(fsm.getState() == WAIT_TO_START);
+}
 
+void loop() {
+
+  fsm.update(true, false, false, false, false);  // TODO TEMPORARY; REMOVE ME
+
+  // //getting the song from the Pi over Serial
+  // HWSERIAL.begin(9600);
+  // if (HWSERIAL.available() > 0) {
+  //   incomingByte = HWSERIAL.read();
+  //   Serial.print("UART received: ");
+  //   Serial.println((char)incomingByte);
+  // }
+
+
+  assert(fsm.getState() == RECEIVING_SONG);
+
+  fsm.update(true, false, false, false, false);  // TODO TEMPORARY; REMOVE ME
+
+  assert(fsm.getState() == RECEIVING_SONG);
+
+
+
+  // parsing the MIDI file
+  parseMIDI();
   uS_per_tick = (double)MICROSECONDS_PER_BEAT / (double)TICKS_PER_QUARTER_NOTE;
   Serial.print("uS_per_tick: ");
   Serial.println(uS_per_tick, 10);
   printMIDI();
-}
 
-void loop() {
+
+
+
+
+
+
   pixels.clear();  // Set all pixel colors to 'off'
   pixels.show();   // Send the updated pixel colors to the hardware.
   delay(5000);
