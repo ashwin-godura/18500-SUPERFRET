@@ -1,3 +1,4 @@
+#include <cassert>
 #include "StateMachine.h"
 
 StateMachine::StateMachine() {

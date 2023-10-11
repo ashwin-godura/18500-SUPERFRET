@@ -27,13 +27,13 @@ double uS_per_tick;
 
 StateMachine fsm;
 
-
+#define strumInterruptPin 22
 #define fileTransmissionInterruptPin 23
+
 void handleFileInterrupt() {
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false, false);
 }
 
-#define strumInterruptPin 22
 void handleStrumInterrupt() {
   fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
 }
@@ -57,6 +57,9 @@ void setup() {
 
 void loop() {
   while (fsm.getState() == WAIT_TO_START) {
+    pixels.clear();  // Set all pixel colors to 'off'
+    pixels.show();   // Send the updated pixel colors to the hardware.
+
     delay(100);
     Serial.println("Waiting to start");
   }
@@ -72,12 +75,12 @@ void loop() {
     //   MIDI_file[i] = 0;
     // }
     // while (true) {
-      // TODO uncommentme
-      // if (HWSERIAL.available() > 0) {
-      //   char incomingByte = HWSERIAL.read();
-      //   MIDI_file[bytePosition] = incomingByte;
-      //   bytePosition++;
-      // }
+    // TODO uncommentme
+    // if (HWSERIAL.available() > 0) {
+    //   char incomingByte = HWSERIAL.read();
+    //   MIDI_file[bytePosition] = incomingByte;
+    //   bytePosition++;
+    // }
     // }
   }
 
@@ -90,13 +93,14 @@ void loop() {
     Serial.println(uS_per_tick, 10);
     printMIDI();
 
-    while (true) {
+    while (fsm.getState() == WAIT_FOR_STRUM) {
       delay(100);
       Serial.println("Waiting for strum");
     }
   }
 
   while (fsm.getState() == USER_EXPERIENCE) {
+    Serial.println("USER_EXPERIENCE");
     pixels.clear();  // Set all pixel colors to 'off'
     pixels.show();   // Send the updated pixel colors to the hardware.
     for (int i = 0; i < NUM_NOTES_FOUND; i++) {
