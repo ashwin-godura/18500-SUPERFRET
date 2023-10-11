@@ -22,13 +22,14 @@ uint8_t MIDI[488] = {
 };
 
 typedef struct {
-  uint32_t duration; // [ticks / quarter-note]
+  uint32_t duration;  // [ticks / quarter-note]
   uint8_t note;
   bool ON;
 } NOTE_t;
 
-#define MAX_NUM_NOTES 1000
-NOTE_t notes[MAX_NUM_NOTES];  // TODO hold more notes?
+#define MAX_MIDI_FILE_SIZE 10'000  // [bytes]
+#define MAX_NUM_NOTES 1000         // [notes] // TODO hold more notes?
+NOTE_t notes[MAX_NUM_NOTES];
 
 uint32_t NUM_NOTES_FOUND = 0;
 uint32_t MICROSECONDS_PER_BEAT = 500'000;  // default
