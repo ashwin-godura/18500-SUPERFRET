@@ -41,7 +41,9 @@ def addFile(request):
    form = AddFileForm(request.POST, request.FILES)
    
    # for some reason this print statement is integal to the functioning of this website
-   print(str(form))
+   # print(str(form))
+   if not form.is_valid():
+      return redirect(reverse('home'))
 
    file = MidiFile()
    file.name = form.cleaned_data['name']
