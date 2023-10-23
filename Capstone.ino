@@ -26,6 +26,7 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 double uS_per_tick;
 
 StateMachine fsm;
+int NOTE_IDX = 0;
 
 #define fileTransmissionInterruptPin 23
 #define strumInterruptPin 22
@@ -98,6 +99,7 @@ void loop() {
     //   bytePosition++;
     // }
     // }
+    NOTE_IDX = 0;
   }
 
   while (fsm.getState() == WAIT_FOR_STRUM) {
@@ -119,33 +121,35 @@ void loop() {
     Serial.println("USER_EXPERIENCE");
     pixels.clear();  // Set all pixel colors to 'off'
     pixels.show();   // Send the updated pixel colors to the hardware.
-    for (int i = 0; i < NUM_NOTES_FOUND and fsm.getState() == USER_EXPERIENCE; i++) {
-      auto us_duration = uS_per_tick * notes[i].duration;
-      delayMicroseconds(us_duration);
+    while (NOTE_IDX < NUM_NOTES_FOUND and fsm.getState() == USER_EXPERIENCE) {
+      auto us_duration = uS_per_tick * notes[NOTE_IDX].duration;
+      delayMicroseconds(us_duration); // TODO remove this delay 
 
-      auto LED_idx = notes[i].note % NUMPIXELS;
-      if (notes[i].ON) {
+      auto LED_idx = notes[NOTE_IDX].note % NUMPIXELS;
+      if (notes[NOTE_IDX].ON) {
         Serial.print("Waiting ");
         Serial.print(us_duration);
         Serial.print(" uS before turning LED ");
         Serial.print(LED_idx);
         Serial.print(" ON (note ");
-        Serial.print(notes[i].note);
+        Serial.print(notes[NOTE_IDX].note);
         Serial.println(")");
 
-        pixels.setPixelColor(notes[i].note % NUMPIXELS, pixels.Color(0, 255, 0));
+        pixels.setPixelColor(notes[NOTE_IDX].note % NUMPIXELS, pixels.Color(0, 255, 0));
       } else {
         Serial.print("Waiting ");
         Serial.print(us_duration);
         Serial.print(" uS before turning LED ");
         Serial.print(LED_idx);
         Serial.print(" OFF (note ");
-        Serial.print(notes[i].note);
+        Serial.print(notes[NOTE_IDX].note);
         Serial.println(")");
 
-        pixels.setPixelColor(notes[i].note % NUMPIXELS, pixels.Color(0, 0, 0));
+        pixels.setPixelColor(notes[NOTE_IDX].note % NUMPIXELS, pixels.Color(0, 0, 0));
       }
       pixels.show();  // Send the updated pixel colors to the hardware.
+
+      NOTE_IDX++;
     }
   }
 
