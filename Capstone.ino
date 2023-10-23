@@ -27,8 +27,10 @@ double uS_per_tick;
 
 StateMachine fsm;
 
-#define strumInterruptPin 22
 #define fileTransmissionInterruptPin 23
+#define strumInterruptPin 22
+#define pauseInterruptPin 21
+#define restartInterruptPin 20
 
 void handleFileInterrupt() {
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false, false);
@@ -36,6 +38,14 @@ void handleFileInterrupt() {
 
 void handleStrumInterrupt() {
   fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
+}
+
+void handlePauseInterrupt() {
+  fsm.update(false, false, false, digitalRead(pauseInterruptPin), false);
+}
+
+void handleRestartInterrupt() {
+  fsm.update(false, false, false, false, digitalRead(restartInterruptPin));
 }
 
 
@@ -49,6 +59,12 @@ void setup() {
 
   pinMode(strumInterruptPin, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(strumInterruptPin), handleStrumInterrupt, CHANGE);
+
+  pinMode(pauseInterruptPin, INPUT_PULLDOWN);
+  attachInterrupt(digitalPinToInterrupt(pauseInterruptPin), handlePauseInterrupt, CHANGE);
+
+  pinMode(restartInterruptPin, INPUT_PULLDOWN);
+  attachInterrupt(digitalPinToInterrupt(restartInterruptPin), handleRestartInterrupt, CHANGE);
 
   analogReadResolution(8);
 
@@ -103,7 +119,7 @@ void loop() {
     Serial.println("USER_EXPERIENCE");
     pixels.clear();  // Set all pixel colors to 'off'
     pixels.show();   // Send the updated pixel colors to the hardware.
-    for (int i = 0; i < NUM_NOTES_FOUND; i++) {
+    for (int i = 0; i < NUM_NOTES_FOUND and fsm.getState() == USER_EXPERIENCE; i++) {
       auto us_duration = uS_per_tick * notes[i].duration;
       delayMicroseconds(us_duration);
 
@@ -131,5 +147,10 @@ void loop() {
       }
       pixels.show();  // Send the updated pixel colors to the hardware.
     }
+  }
+
+  while (fsm.getState() == PAUSED) {
+    Serial.println("Paused");
+    delay(100);
   }
 }

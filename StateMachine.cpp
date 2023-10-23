@@ -46,7 +46,7 @@ void StateMachine::update(bool file_transmission, bool strum, bool done, bool pa
           nextState = WAIT_TO_START;
         } else {
           if (strum) {
-            nextState = WAIT_FOR_STRUM;
+            nextState = USER_EXPERIENCE;
           }
         }
         break;
