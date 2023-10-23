@@ -17,4 +17,11 @@ class AddFileForm(forms.Form):
         label='Select static file',
         widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
     )
+    # Customizes form validation for properties that apply to more
+    # than one field.  Overrides the forms.Form.clean function.
+    def clean(self):
+        # Calls our parent (forms.Form) .clean function, gets a dictionary
+        # of cleaned data as a result
+        cleaned_data = super().clean()
+        return cleaned_data
 
