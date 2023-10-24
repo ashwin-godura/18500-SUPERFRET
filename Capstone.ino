@@ -121,9 +121,18 @@ void loop() {
     Serial.println("USER_EXPERIENCE");
     pixels.clear();  // Set all pixel colors to 'off'
     pixels.show();   // Send the updated pixel colors to the hardware.
+
     while (NOTE_IDX < NUM_NOTES_FOUND and fsm.getState() == USER_EXPERIENCE) {
       auto us_duration = uS_per_tick * notes[NOTE_IDX].duration;
-      delayMicroseconds(us_duration); // TODO remove this delay 
+
+      unsigned long long delayStartTime = micros();
+      unsigned long long delayTime = us_duration;
+      while (micros() < delayStartTime + delayTime) {
+        Serial.println("Waiting");
+        delay(100);
+      }
+
+      // delayMicroseconds(us_duration); // TODO remove this delay
 
       auto LED_idx = notes[NOTE_IDX].note % NUMPIXELS;
       if (notes[NOTE_IDX].ON) {
@@ -150,6 +159,10 @@ void loop() {
       pixels.show();  // Send the updated pixel colors to the hardware.
 
       NOTE_IDX++;
+    }
+
+    if (NUM_NOTES_FOUND <= NOTE_IDX) {
+      fsm.update(false, false, true, false, false);
     }
   }
 
