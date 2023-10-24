@@ -132,8 +132,8 @@ void loop() {
         delay(100);
       }
 
-      // delayMicroseconds(us_duration); // TODO remove this delay
-
+      // following code block takes 11 - 494 uS to run
+      auto start = micros();
       auto LED_idx = notes[NOTE_IDX].note % NUMPIXELS;
       if (notes[NOTE_IDX].ON) {
         Serial.print("Waiting ");
@@ -157,6 +157,8 @@ void loop() {
         pixels.setPixelColor(notes[NOTE_IDX].note % NUMPIXELS, pixels.Color(0, 0, 0));
       }
       pixels.show();  // Send the updated pixel colors to the hardware.
+      auto end = micros();
+      Serial.println((end-start)/1.0e6, 10);
 
       NOTE_IDX++;
     }
