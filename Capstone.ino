@@ -23,10 +23,21 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial2
 
+#define FRETBOARD_SAMPLING_PERIOD (0.001 * 1.0e6)  // [us]
+#define NUM_FRETS 5
+
 double uS_per_tick;
 
 StateMachine fsm;
 int NOTE_IDX = 0;
+
+#define fretClockPin 3
+#define fretSimulusPin 4
+
+#define E_stringPin 24
+#define A_stringPin 25
+#define D_stringPin 26
+#define G_stringPin 27
 
 #define fileTransmissionInterruptPin 23
 #define strumInterruptPin 22
@@ -55,6 +66,14 @@ void setup() {
   Serial.begin(19200);
   HWSERIAL.begin(19200);
 
+  pinMode(fretClockPin, OUTPUT);
+  pinMode(fretSimulusPin, OUTPUT);
+
+  pinMode(E_stringPin, INPUT);
+  pinMode(A_stringPin, INPUT);
+  pinMode(D_stringPin, INPUT);
+  pinMode(G_stringPin, INPUT);
+
   pinMode(fileTransmissionInterruptPin, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(fileTransmissionInterruptPin), handleFileInterrupt, CHANGE);
 
@@ -70,6 +89,39 @@ void setup() {
   analogReadResolution(8);
 
   assert(fsm.getState() == WAIT_TO_START);
+}
+
+uint8_t convertFretCoordinatesToNote(
+  bool notePlayedOn_E_string,
+  bool notePlayedOn_A_string,
+  bool notePlayedOn_D_string,
+  bool notePlayedOn_G_string,
+  bool fret) {
+  if (notePlayedOn_E_string || notePlayedOn_A_string || notePlayedOn_D_string || notePlayedOn_G_string) {
+    return 0x36;  // TODO
+  } else {
+    return 0x0;
+  }
+}
+
+uint8_t sampleFrets() {
+  uint8_t notePlayed = 0;
+
+  digitalWrite(fretSimulusPin, HIGH);
+  digitalWrite(fretClockPin, HIGH);
+  digitalWrite(fretSimulusPin, LOW);
+
+  for (int fret = 0; fret < NUM_FRETS; fret++) {
+    bool notePlayedOn_E_string = digitalRead(E_stringPin);
+    bool notePlayedOn_A_string = digitalRead(A_stringPin);
+    bool notePlayedOn_D_string = digitalRead(D_stringPin);
+    bool notePlayedOn_G_string = digitalRead(G_stringPin);
+    if (notePlayed = convertFretCoordinatesToNote(notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string, notePlayedOn_G_string, fret)) {
+      break;
+    }
+    digitalWrite(fretClockPin, HIGH);
+  }
+  return notePlayed;
 }
 
 void loop() {
@@ -122,18 +174,29 @@ void loop() {
     pixels.clear();  // Set all pixel colors to 'off'
     pixels.show();   // Send the updated pixel colors to the hardware.
 
+    unsigned long long nextFretboardSampleTime = micros();
+
     while (NOTE_IDX < NUM_NOTES_FOUND and fsm.getState() == USER_EXPERIENCE) {
       auto us_duration = uS_per_tick * notes[NOTE_IDX].duration;
 
       unsigned long long delayStartTime = micros();
       unsigned long long delayTime = us_duration;
       while (micros() < delayStartTime + delayTime) {
-        Serial.println("Waiting");
+        Serial.println("Sampling frets");
+        uint8_t notePlayed = 0x00;
+        if (nextFretboardSampleTime <= micros()) {  // enough time elapsed since last sample
+          if (notePlayed = sampleFrets()) {
+            Serial.print("Detected note ");
+            Serial.print(notePlayed, HEX);
+            Serial.println(" played");
+          }
+          nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
+        }
         delay(100);
       }
 
       // following code block takes 11 - 494 uS to run
-      auto start = micros();
+      // auto start = micros();
       auto LED_idx = notes[NOTE_IDX].note % NUMPIXELS;
       if (notes[NOTE_IDX].ON) {
         Serial.print("Waiting ");
@@ -157,8 +220,8 @@ void loop() {
         pixels.setPixelColor(notes[NOTE_IDX].note % NUMPIXELS, pixels.Color(0, 0, 0));
       }
       pixels.show();  // Send the updated pixel colors to the hardware.
-      auto end = micros();
-      Serial.println((end-start)/1.0e6, 10);
+      // auto end = micros();
+      // Serial.println((end-start)/1.0e6, 10);
 
       NOTE_IDX++;
     }
