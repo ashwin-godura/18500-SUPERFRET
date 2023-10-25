@@ -90,3 +90,6 @@ def findactivefile():
       if file.active:
          return file
    return None
+
+def movingblock(request):
+    return render(request, 'movingblock.html')

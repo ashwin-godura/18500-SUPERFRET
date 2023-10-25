@@ -1,0 +1,79 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Moving Page</title>
+
+</head>
+<body>
+
+<button id="spawnButton">Spawn Block</button>
+<canvas id="myCanvas" width="1000" height="500"></canvas>
+
+<script>
+    let blockCount = 0;
+    const String1Position = 400
+    const Fret1Position = 10
+    const StringGap = 60
+    const FretGap = 60
+    var rectangles = [];
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+
+    document.getElementById('spawnButton').addEventListener('click', function () {
+        const xCoordinate = (50 + blockCount * 10) % 100;
+        const color = 'red';
+        const stringNumber = (blockCount % 4) + 1;  // 1, 2, 3, or 4
+        const fretNumber = (blockCount % 12) + 1;
+        spawnBlock(fretNumber, color, stringNumber);
+    });
+
+    function spawnBlock(fret, color, stringNumber) {
+        targetPosition = String1Position - (StringGap * stringNumber)
+        xCoordinate = Fret1Position + FretGap * fret
+
+        rectangles.push({
+            x: xCoordinate,
+            y: 10,
+            targetPosition: targetPosition,
+            color: color
+        });
+
+        blockCount++;
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Loop through all rectangles
+        for (var i = 0; i < rectangles.length; i++) {
+            var rect = rectangles[i];
+
+            ctx.strokeStyle = rect.color;
+            ctx.fillStyle = rect.color;
+
+            ctx.strokeRect(rect.x, rect.targetPosition, 50, 50);
+            ctx.fillRect(rect.x, rect.y, 50, 50);
+
+            rect.y += 1; // Update the position
+
+            // Check if the rectangle has reached the target position
+            if (rect.y < rect.targetPosition) {
+
+            } else {
+                // Remove the completed rectangle
+                rectangles.splice(i, 1);
+                i--; // Adjust the index for the next iteration
+            }
+        }
+    }
+
+    setInterval(animate, 10)    
+
+
+</script>
+
+</body>
+</html>
