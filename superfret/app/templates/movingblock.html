@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Block Moving Page</title>
@@ -10,23 +11,37 @@
 <body>
 
 <button id="spawnButton">Spawn Block</button>
-<canvas id="myCanvas" width="1000" height="500"></canvas>
+<canvas id="myCanvas" width="1200" height="500"></canvas>
 
 <script>
     let blockCount = 0;
-    const String1Position = 400
-    const Fret1Position = 10
-    const StringGap = 60
-    const FretGap = 60
+    const String1Position = 363
+    const Fret1Position = 80
+    const StringGap = 36
+    const FretGap = 86
     var rectangles = [];
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
 
     document.getElementById('spawnButton').addEventListener('click', function () {
         const xCoordinate = (50 + blockCount * 10) % 100;
-        const color = 'red';
+        var color;
         const stringNumber = (blockCount % 4) + 1;  // 1, 2, 3, or 4
         const fretNumber = (blockCount % 12) + 1;
+        switch (stringNumber) {
+            case 1: 
+                color = 'red';
+                break;
+            case 2:
+                color = 'blue';
+                break;
+            case 3:
+                color = 'green';
+                break;
+            default:
+                color = 'yellow';
+                break;
+        }
         spawnBlock(fretNumber, color, stringNumber);
     });
 
@@ -46,16 +61,22 @@
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const image = new Image();
+        
+        // image from https://bassplayercenter.com/wp-content/uploads/2019/10/All-notes-on-bass-horiz.png
+        image.src = 'https://bassplayercenter.com/wp-content/uploads/2019/10/All-notes-on-bass-horiz.png';
+        ctx.drawImage(image, 0, 200);
 
         // Loop through all rectangles
         for (var i = 0; i < rectangles.length; i++) {
             var rect = rectangles[i];
 
-            ctx.strokeStyle = rect.color;
+            ctx.strokeStyle = 'white';
             ctx.fillStyle = rect.color;
 
-            ctx.strokeRect(rect.x, rect.targetPosition, 50, 50);
-            ctx.fillRect(rect.x, rect.y, 50, 50);
+            ctx.lineWidth = 3;
+            ctx.strokeRect(rect.x, rect.targetPosition, 30, 30);
+            ctx.fillRect(rect.x, rect.y, 30, 30);
 
             rect.y += 1; // Update the position
 

@@ -25,5 +25,5 @@ urlpatterns = [
     path('startfile/<str:name>/', views.startfile, name='startfile'),
     path('deletefile/<str:name>/', views.deletefile, name='deletefile'),
     path('stopfile', views.stopfile, name='stopfile'),
-    path('movingblock', views.movingblock, name='movingblock')
+    path('movingblock', views.movingblock, name='movingblock'),
 ]

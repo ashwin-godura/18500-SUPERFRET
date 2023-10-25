@@ -1,5 +1,6 @@
 from decimal import Decimal
 import time
+from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
 
@@ -13,9 +14,9 @@ from app.forms import AddFileForm
 from app.models import MidiFile
 import os
 
-from app.uart import Uart
+# from app.uart import Uart
 
-u = Uart()
+# u = Uart()
 
 def getHome(request):  
    context = {}
@@ -60,7 +61,7 @@ def startfile(request, name):
    file = MidiFile.objects.all().filter(name=name)[0]
    file.active = True
    file.save()
-   u.start_song(str(file.file))
+   # u.start_song(str(file.file))
 
    return getHome(request)
 
@@ -79,7 +80,7 @@ def stopfile(request):
    file = findactivefile()
    file.active = False
    file.save()
-   u.stop_song()
+   # u.stop_song()
       
    return getHome(request)
 
