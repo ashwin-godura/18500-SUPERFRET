@@ -33,6 +33,8 @@ double uS_per_tick;
 StateMachine fsm;
 int NOTE_IDX = 0;
 
+#define pickPin 2
+
 #define fretClockPin 3
 #define fretSimulusPin 4
 
@@ -50,11 +52,10 @@ void handleFileInterrupt() {
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false, false);
 }
 
-unsigned long long timeOfLastStrum = 0;
-void handleStrumInterrupt() {
-  fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
-  timeOfLastStrum = micros();
-}
+// void handleStrumInterrupt() {
+//   fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
+//   timeOfLastStrum = micros();
+// }
 
 void handlePauseInterrupt() {
   fsm.update(false, false, false, digitalRead(pauseInterruptPin), false);
@@ -63,8 +64,6 @@ void handlePauseInterrupt() {
 void handleRestartInterrupt() {
   fsm.update(false, false, false, false, digitalRead(restartInterruptPin));
 }
-
-
 
 uint8_t convertFretCoordinatesToNote(
   bool notePlayedOn_E_string,
@@ -94,11 +93,9 @@ uint8_t convertFretCoordinatesToNote(
 }
 
 
-
-
-void clearShiftRegister() {  // clock a 0 though the shift register 2 times to ensure it is cleared
+void clearShiftRegister() {  // clock a 0 though the shift register NUM_FRETS + 1 times to ensure it is cleared
   digitalWrite(fretSimulusPin, LOW);
-  for (int fret = 0; fret < 2 * NUM_FRETS; fret++) {
+  for (int fret = 0; fret < NUM_FRETS + 1; fret++) {
     digitalWrite(fretClockPin, LOW);
     delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, HIGH);
@@ -143,10 +140,43 @@ void sampleFrets() {
   }
 }
 
+int E_stringPin_count;
+int A_stringPin_count;
+int D_stringPin_count;
+int G_stringPin_count;
+unsigned long long timeOfLastStrum = 0;
+void samplePick() {
+  E_stringPin_count = 0;
+  A_stringPin_count = 0;
+  D_stringPin_count = 0;
+  G_stringPin_count = 0;
+  //
+  pinMode(pickPin, OUTPUT);
+  digitalWrite(pickPin, HIGH);
+  delayMicroseconds(DIGITAL_DELAY);
+  for (int i = 0; i < 5; i++) {
+    E_stringPin_count += digitalRead(E_stringPin);
+    A_stringPin_count += digitalRead(A_stringPin);
+    D_stringPin_count += digitalRead(D_stringPin);
+    G_stringPin_count += digitalRead(G_stringPin);
+    delayMicroseconds(10);
+  }
+  digitalWrite(pickPin, LOW);
+  pinMode(pickPin, INPUT);
+  //
+  if (E_stringPin_count || A_stringPin_count || D_stringPin_count || G_stringPin_count) {
+    fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
+    timeOfLastStrum = micros();
+    Serial.println("Strum detected");
+  }
+}
+
 void setup() {
   pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
   Serial.begin(19200);
   HWSERIAL.begin(19200);
+
+  pinMode(pickPin, INPUT);
 
   pinMode(fretClockPin, OUTPUT);
   pinMode(fretSimulusPin, OUTPUT);
@@ -159,8 +189,8 @@ void setup() {
   pinMode(fileTransmissionInterruptPin, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(fileTransmissionInterruptPin), handleFileInterrupt, CHANGE);
 
-  pinMode(strumInterruptPin, INPUT_PULLDOWN);
-  attachInterrupt(digitalPinToInterrupt(strumInterruptPin), handleStrumInterrupt, CHANGE);
+  // pinMode(strumInterruptPin, INPUT_PULLDOWN);
+  // attachInterrupt(digitalPinToInterrupt(strumInterruptPin), handleStrumInterrupt, CHANGE);
 
   pinMode(pauseInterruptPin, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(pauseInterruptPin), handlePauseInterrupt, CHANGE);
@@ -179,17 +209,16 @@ void loop() {
     if (nextFretboardSampleTime <= micros()) {  // enough time elapsed since last sample
       auto start = micros();
       sampleFrets();
+      samplePick();
       auto end = micros();
       Serial.println((end - start) / 1000.0);
       nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
     }
-    if (micros() - timeOfLastStrum < 0.1e6) {
+    if (notePlayed and (micros() - timeOfLastStrum < 0.1e6)) {
       Serial.print("Strummed note ");
       Serial.println(notePlayed, HEX);
     }
   }
-
-
 
   while (fsm.getState() == WAIT_TO_START) {
     pixels.clear();  // Set all pixel colors to 'off'
