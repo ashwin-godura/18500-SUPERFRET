@@ -73,21 +73,21 @@ uint8_t convertFretCoordinatesToNote(
   bool notePlayedOn_G_string,
   uint8_t fret) {
   if (notePlayedOn_E_string) {
-    Serial.print("Detected press on E string, fret ");
-    Serial.println(fret);
-    return 0x36;  // TODO
+    // Serial.print("Detected press on E string, fret ");
+    // Serial.println(fret);
+    return 0xEE;  // TODO
   } else if (notePlayedOn_A_string) {
-    Serial.print("Detected press on A string, fret ");
-    Serial.println(fret);
-    return 0x36;  // TODO
+    // Serial.print("Detected press on A string, fret ");
+    // Serial.println(fret);
+    return 0xAA;  // TODO
   } else if (notePlayedOn_D_string) {
-    Serial.print("Detected press on D string, fret ");
-    Serial.println(fret);
-    return 0x36;  // TODO
+    // Serial.print("Detected press on D string, fret ");
+    // Serial.println(fret);
+    return 0xDD;  // TODO
   } else if (notePlayedOn_G_string) {
-    Serial.print("Detected press on G string, fret ");
-    Serial.println(fret);
-    return 0x36;  // TODO
+    // Serial.print("Detected press on G string, fret ");
+    // Serial.println(fret);
+    return 0xFF;  // TODO
   } else {
     return 0x0;
   }
@@ -120,17 +120,20 @@ void loadShiftRegister() {
 
 uint8_t notePlayed = 0;
 void sampleFrets() {
-  Serial.println("Sampling Frets");
+  // Serial.println("Sampling Frets");
   clearShiftRegister();
   // Serial.println("Cleared");
   loadShiftRegister();
   // Serial.println("Loaded");
+  notePlayed = 0;
   for (int fret = 0; fret < NUM_FRETS; fret++) {
     bool notePlayedOn_E_string = digitalRead(E_stringPin);
     bool notePlayedOn_A_string = digitalRead(A_stringPin);
     bool notePlayedOn_D_string = digitalRead(D_stringPin);
     bool notePlayedOn_G_string = digitalRead(G_stringPin);
-    notePlayed = convertFretCoordinatesToNote(notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string, notePlayedOn_G_string, fret);
+    if (not notePlayed) {
+      notePlayed = convertFretCoordinatesToNote(notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string, notePlayedOn_G_string, fret);
+    }
     digitalWrite(fretClockPin, LOW);
     delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, HIGH);
@@ -146,11 +149,14 @@ int A_stringPin_count;
 int D_stringPin_count;
 int G_stringPin_count;
 unsigned long long timeOfLastStrum = 0;
+bool prevStrumDetection = false;
+bool strum = false;
 void samplePick() {
   E_stringPin_count = 0;
   A_stringPin_count = 0;
   D_stringPin_count = 0;
   G_stringPin_count = 0;
+  bool currStrumDetection = false;
   //
   pinMode(pickPin, OUTPUT);
   digitalWrite(pickPin, HIGH);
@@ -168,16 +174,21 @@ void samplePick() {
   if (E_stringPin_count || A_stringPin_count || D_stringPin_count || G_stringPin_count) {
     fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
     timeOfLastStrum = micros();
+    // Serial.println("Strum detected");
+    currStrumDetection = true;
   }
-  if (E_stringPin_count) {
-    Serial.println("Strum on E string");
-  } else if (A_stringPin_count) {
-    Serial.println("Strum on A string");
-  } else if (D_stringPin_count) {
-    Serial.println("Strum on D string");
-  } else if (G_stringPin_count) {
-    Serial.println("Strum on G string");
-  }
+  // if (E_stringPin_count) {
+  //   Serial.println("Strum on E string");
+  // } else if (A_stringPin_count) {
+  //   Serial.println("Strum on A string");
+  // } else if (D_stringPin_count) {
+  //   Serial.println("Strum on D string");
+  // } else if (G_stringPin_count) {
+  //   Serial.println("Strum on G string");
+  // }
+  strum = not prevStrumDetection and currStrumDetection;
+  prevStrumDetection = currStrumDetection;
+  return false;
 }
 
 void setup() {
@@ -215,24 +226,24 @@ void setup() {
 void loop() {
   unsigned long long nextFretboardSampleTime = micros();
   while (true) {
+    bool prevStrumStatus = false;
     if (nextFretboardSampleTime <= micros()) {  // enough time elapsed since last sample
-      auto start = micros();
+      // auto start = micros();
       sampleFrets();
       samplePick();
-      auto end = micros();
-
-      Serial.println((end - start) / 1000.0);
-      nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
-      Serial.println(notePlayed);
+      // auto end = micros();
+      // Serial.println((end - start) / 1000.0);
+      // Serial.println(notePlayed);
       // Serial.print(notePlayed);
       // Serial.print('\t');
       // Serial.print((micros() - timeOfLastStrum) / 1e6);
       // Serial.print('\t');
       // Serial.println(MIN_TIME_BETWEEN_STRUMS / 1e6);
-      if (notePlayed and ((micros() - timeOfLastStrum) < MIN_TIME_BETWEEN_STRUMS)) {
+      if (strum and ((micros() - timeOfLastStrum) < MIN_TIME_BETWEEN_STRUMS)) {
         Serial.print("Strummed note ");
         Serial.println(notePlayed, HEX);
       }
+      nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
     }
   }
 
@@ -293,7 +304,6 @@ void loop() {
       unsigned long long delayStartTime = micros();
       unsigned long long delayTime = us_duration;
       while (micros() < delayStartTime + delayTime) {
-        Serial.println("Sampling frets");
         if (nextFretboardSampleTime <= micros()) {  // enough time elapsed since last sample
           sampleFrets();
           if (notePlayed) {
