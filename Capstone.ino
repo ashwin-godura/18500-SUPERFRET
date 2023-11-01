@@ -25,6 +25,7 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 #define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)     // [us]
 #define MIN_TIME_BETWEEN_FINGERING (0.25 * 1.0e6)  // [us]
+#define MIN_TIME_BETWEEN_STRUMS (0.1e6)            // [us]
 #define NUM_FRETS 15
 #define DIGITAL_DELAY 5  // [us]
 
@@ -167,7 +168,15 @@ void samplePick() {
   if (E_stringPin_count || A_stringPin_count || D_stringPin_count || G_stringPin_count) {
     fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
     timeOfLastStrum = micros();
-    Serial.println("Strum detected");
+  }
+  if (E_stringPin_count) {
+    Serial.println("Strum on E string");
+  } else if (A_stringPin_count) {
+    Serial.println("Strum on A string");
+  } else if (D_stringPin_count) {
+    Serial.println("Strum on D string");
+  } else if (G_stringPin_count) {
+    Serial.println("Strum on G string");
   }
 }
 
@@ -211,12 +220,19 @@ void loop() {
       sampleFrets();
       samplePick();
       auto end = micros();
+
       Serial.println((end - start) / 1000.0);
       nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
-    }
-    if (notePlayed and (micros() - timeOfLastStrum < 0.1e6)) {
-      Serial.print("Strummed note ");
-      Serial.println(notePlayed, HEX);
+      Serial.println(notePlayed);
+      // Serial.print(notePlayed);
+      // Serial.print('\t');
+      // Serial.print((micros() - timeOfLastStrum) / 1e6);
+      // Serial.print('\t');
+      // Serial.println(MIN_TIME_BETWEEN_STRUMS / 1e6);
+      if (notePlayed and ((micros() - timeOfLastStrum) < MIN_TIME_BETWEEN_STRUMS)) {
+        Serial.print("Strummed note ");
+        Serial.println(notePlayed, HEX);
+      }
     }
   }
 
