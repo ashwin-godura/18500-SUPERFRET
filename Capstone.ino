@@ -23,9 +23,10 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial2
 
-#define FRETBOARD_SAMPLING_PERIOD (100 * 1.0e3)    // [us]
+#define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)     // [us]
 #define MIN_TIME_BETWEEN_FINGERING (0.25 * 1.0e6)  // [us]
 #define NUM_FRETS 5
+#define DIGITAL_DELAY 5  // [us]
 
 double uS_per_tick;
 
@@ -70,7 +71,7 @@ uint8_t convertFretCoordinatesToNote(
   bool notePlayedOn_A_string,
   bool notePlayedOn_D_string,
   bool notePlayedOn_G_string,
-  bool fret) {
+  uint8_t fret) {
   if (notePlayedOn_E_string) {
     Serial.print("Detected press on E string, fret ");
     Serial.println(fret);
@@ -121,6 +122,7 @@ void loadShiftRegister() {
 
 uint8_t notePlayed = 0;
 void sampleFrets() {
+  Serial.println("Sampling Frets");
   clearShiftRegister();
   // Serial.println("Cleared");
   loadShiftRegister();
@@ -175,7 +177,6 @@ void loop() {
   unsigned long long nextFretboardSampleTime = micros();
   while (true) {
     if (nextFretboardSampleTime <= micros()) {  // enough time elapsed since last sample
-      Serial.println("Sampling Frets");
       sampleFrets();
       nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
     }
