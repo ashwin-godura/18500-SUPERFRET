@@ -23,7 +23,7 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial2
 
-#define FRETBOARD_SAMPLING_PERIOD (1000 * 1.0e3)   // [us]
+#define FRETBOARD_SAMPLING_PERIOD (100 * 1.0e3)    // [us]
 #define MIN_TIME_BETWEEN_FINGERING (0.25 * 1.0e6)  // [us]
 #define NUM_FRETS 5
 
@@ -71,12 +71,28 @@ uint8_t convertFretCoordinatesToNote(
   bool notePlayedOn_D_string,
   bool notePlayedOn_G_string,
   bool fret) {
-  if (notePlayedOn_E_string || notePlayedOn_A_string || notePlayedOn_D_string || notePlayedOn_G_string) {
+  if (notePlayedOn_E_string) {
+    Serial.print("Detected press on E string, fret ");
+    Serial.println(fret);
+    return 0x36;  // TODO
+  } else if (notePlayedOn_A_string) {
+    Serial.print("Detected press on A string, fret ");
+    Serial.println(fret);
+    return 0x36;  // TODO
+  } else if (notePlayedOn_D_string) {
+    Serial.print("Detected press on D string, fret ");
+    Serial.println(fret);
+    return 0x36;  // TODO
+  } else if (notePlayedOn_G_string) {
+    Serial.print("Detected press on G string, fret ");
+    Serial.println(fret);
     return 0x36;  // TODO
   } else {
     return 0x0;
   }
 }
+
+
 
 
 void clearShiftRegister() {  // clock a 0 though the shift register 2 times to ensure it is cleared
@@ -114,11 +130,7 @@ void sampleFrets() {
     bool notePlayedOn_A_string = digitalRead(A_stringPin);
     bool notePlayedOn_D_string = digitalRead(D_stringPin);
     bool notePlayedOn_G_string = digitalRead(G_stringPin);
-    if (notePlayed = convertFretCoordinatesToNote(notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string, notePlayedOn_G_string, fret)) {
-      Serial.print("Detected press on fret ");
-      Serial.println(fret);
-      // break;
-    }
+    notePlayed = convertFretCoordinatesToNote(notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string, notePlayedOn_G_string, fret);
     digitalWrite(fretClockPin, LOW);
     delay(1);
     digitalWrite(fretClockPin, HIGH);
