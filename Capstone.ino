@@ -23,9 +23,8 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial2
 
-#define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)     // [us]
-#define MIN_TIME_BETWEEN_FINGERING (0.25 * 1.0e6)  // [us]
-#define MIN_TIME_BETWEEN_STRUMS (0.1e6)            // [us]
+#define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)  // [us]
+#define MIN_TIME_BETWEEN_STRUMS (0.01e6)        // [us]
 #define NUM_FRETS 15
 #define DIGITAL_DELAY 5  // [us]
 
@@ -120,7 +119,6 @@ void loadShiftRegister() {
 
 uint8_t notePlayed = 0;
 void sampleFrets() {
-  // Serial.println("Sampling Frets");
   clearShiftRegister();
   // Serial.println("Cleared");
   loadShiftRegister();
@@ -134,6 +132,9 @@ void sampleFrets() {
     if (not notePlayed) {
       notePlayed = convertFretCoordinatesToNote(notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string, notePlayedOn_G_string, fret);
     }
+    //  else {
+    //   Serial.println("notePlayed");
+    // }
     digitalWrite(fretClockPin, LOW);
     delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, HIGH);
@@ -172,9 +173,6 @@ void samplePick() {
   pinMode(pickPin, INPUT);
   //
   if (E_stringPin_count || A_stringPin_count || D_stringPin_count || G_stringPin_count) {
-    fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
-    timeOfLastStrum = micros();
-    // Serial.println("Strum detected");
     currStrumDetection = true;
   }
   // if (E_stringPin_count) {
@@ -186,7 +184,12 @@ void samplePick() {
   // } else if (G_stringPin_count) {
   //   Serial.println("Strum on G string");
   // }
-  strum = not prevStrumDetection and currStrumDetection;
+  strum = prevStrumDetection and not currStrumDetection;
+  if (strum) {
+    fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
+    timeOfLastStrum = micros();
+    // Serial.println("Strummed");
+  }
   prevStrumDetection = currStrumDetection;
   return false;
 }
@@ -234,12 +237,16 @@ void loop() {
       // auto end = micros();
       // Serial.println((end - start) / 1000.0);
       // Serial.println(notePlayed);
+
       // Serial.print(notePlayed);
+      // Serial.print('\t');
+      // Serial.print(strum);
       // Serial.print('\t');
       // Serial.print((micros() - timeOfLastStrum) / 1e6);
       // Serial.print('\t');
       // Serial.println(MIN_TIME_BETWEEN_STRUMS / 1e6);
-      if (strum and ((micros() - timeOfLastStrum) < MIN_TIME_BETWEEN_STRUMS)) {
+
+      if (notePlayed and strum and ((micros() - timeOfLastStrum) < MIN_TIME_BETWEEN_STRUMS)) {
         Serial.print("Strummed note ");
         Serial.println(notePlayed, HEX);
       }
