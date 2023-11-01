@@ -25,7 +25,7 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 #define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)     // [us]
 #define MIN_TIME_BETWEEN_FINGERING (0.25 * 1.0e6)  // [us]
-#define NUM_FRETS 5
+#define NUM_FRETS 15
 #define DIGITAL_DELAY 5  // [us]
 
 double uS_per_tick;
@@ -100,24 +100,24 @@ void clearShiftRegister() {  // clock a 0 though the shift register 2 times to e
   digitalWrite(fretSimulusPin, LOW);
   for (int fret = 0; fret < 2 * NUM_FRETS; fret++) {
     digitalWrite(fretClockPin, LOW);
-    delay(1);
+    delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, HIGH);
-    delay(1);
+    delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, LOW);
-    delay(1);
+    delayMicroseconds(DIGITAL_DELAY);
   }
 }
 void loadShiftRegister() {
   digitalWrite(fretSimulusPin, HIGH);
-  delay(1);
+  delayMicroseconds(DIGITAL_DELAY);
   digitalWrite(fretClockPin, LOW);
-  delay(1);
+  delayMicroseconds(DIGITAL_DELAY);
   digitalWrite(fretClockPin, HIGH);
-  delay(1);
+  delayMicroseconds(DIGITAL_DELAY);
   digitalWrite(fretClockPin, LOW);
-  delay(1);
+  delayMicroseconds(DIGITAL_DELAY);
   digitalWrite(fretSimulusPin, LOW);
-  delay(1);
+  delayMicroseconds(DIGITAL_DELAY);
 }
 
 uint8_t notePlayed = 0;
@@ -134,11 +134,11 @@ void sampleFrets() {
     bool notePlayedOn_G_string = digitalRead(G_stringPin);
     notePlayed = convertFretCoordinatesToNote(notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string, notePlayedOn_G_string, fret);
     digitalWrite(fretClockPin, LOW);
-    delay(1);
+    delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, HIGH);
-    delay(1);
+    delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, LOW);
-    delay(1);
+    delayMicroseconds(DIGITAL_DELAY);
     // Serial.println("Clocked");
   }
 }
@@ -177,7 +177,10 @@ void loop() {
   unsigned long long nextFretboardSampleTime = micros();
   while (true) {
     if (nextFretboardSampleTime <= micros()) {  // enough time elapsed since last sample
+      auto start = micros();
       sampleFrets();
+      auto end = micros();
+      Serial.println((end - start) / 1000.0);
       nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
     }
     if (micros() - timeOfLastStrum < 0.1e6) {
