@@ -70,6 +70,11 @@ void handleRestartInterrupt() {
   fsm.update(false, false, false, false, digitalRead(restartInterruptPin));
 }
 
+uint8_t get_LEDidx_from_note(uint8_t note) {
+  // TODO index into a look-up table
+  return note % NUMPIXELS;
+}
+
 uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
                                      bool notePlayedOn_A_string,
                                      bool notePlayedOn_D_string,
@@ -324,13 +329,13 @@ void loop() {
     auto LED_idx;
     while (NOTE_IDX < NUM_NOTES_FOUND and fsm.getState() == USER_EXPERIENCE) {
       expected_note = notes[NOTE_IDX];
-      LED_idx = expected_note.note % NUMPIXELS;
+      LED_idx = get_LEDidx_from_note(expected_note.note);
 
       if (mode == TRAINING) {
         while (not expected_note.ON and NOTE_IDX < NUM_NOTES_FOUND) {
           NOTE_IDX++;
           expected_note = notes[NOTE_IDX];
-          LED_idx = expected_note.note % NUMPIXELS;
+          LED_idx = get_LEDidx_from_note(expected_note.note);
         }
 
         assert(expected_note.note != 0x0);
@@ -340,8 +345,7 @@ void loop() {
         Serial.print(" ON (note ");
         Serial.print(expected_note.note);
         Serial.println(")");
-        pixels.setPixelColor(expected_note.note % NUMPIXELS,
-                             pixels.Color(0, 255, 0));
+        pixels.setPixelColor(LED_idx, pixels.Color(0, 255, 0));
 
         sampleFrets();
         samplePick();
@@ -351,8 +355,7 @@ void loop() {
           Serial.print(" OFF (note ");
           Serial.print(expected_note.note);
           Serial.println(")");
-          pixels.setPixelColor(expected_note.note % NUMPIXELS,
-                               pixels.Color(0, 0, 0));
+          pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
           NOTE_IDX++;
         }
         pixels.show(); // Send the updated pixel colors to the hardware.
@@ -390,8 +393,7 @@ void loop() {
           Serial.print(expected_note.note);
           Serial.println(")");
 
-          pixels.setPixelColor(expected_note.note % NUMPIXELS,
-                               pixels.Color(0, 255, 0));
+          pixels.setPixelColor(LED_idx, pixels.Color(0, 255, 0));
         } else {
           Serial.print("Waiting ");
           Serial.print(us_duration);
@@ -401,8 +403,7 @@ void loop() {
           Serial.print(expected_note.note);
           Serial.println(")");
 
-          pixels.setPixelColor(expected_note.note % NUMPIXELS,
-                               pixels.Color(0, 0, 0));
+          pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
         }
         pixels.show(); // Send the updated pixel colors to the hardware.
         // auto end = micros();
