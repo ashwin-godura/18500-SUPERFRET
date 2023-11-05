@@ -318,16 +318,18 @@ void loop() {
     }
   }
 
+  unsigned long long nextFretboardSampleTime = 0;
   while (fsm.getState() == USER_EXPERIENCE) {
-    Serial.println("USER_EXPERIENCE");
-    pixels.clear(); // Set all pixel colors to 'off'
-    pixels.show();  // Send the updated pixel colors to the hardware.
-
-    unsigned long long nextFretboardSampleTime = micros();
+    if (fsm.getPrevState() != USER_EXPERIENCE) {
+      Serial.println("USER_EXPERIENCE");
+      pixels.clear(); // Set all pixel colors to 'off'
+      pixels.show();  // Send the updated pixel colors to the hardware.
+      nextFretboardSampleTime = micros();
+    }
 
     NOTE expected_note;
     auto LED_idx;
-    while (NOTE_IDX < NUM_NOTES_FOUND and fsm.getState() == USER_EXPERIENCE) {
+    if (NOTE_IDX < NUM_NOTES_FOUND) {
       expected_note = notes[NOTE_IDX];
       LED_idx = get_LEDidx_from_note(expected_note.note);
 
@@ -411,9 +413,7 @@ void loop() {
 
         NOTE_IDX++;
       }
-    }
-
-    if (NUM_NOTES_FOUND <= NOTE_IDX) {
+    } else {
       fsm.update(false, false, true, false, false);
     }
   }

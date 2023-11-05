@@ -11,15 +11,13 @@ class StateMachine {
 public:
   StateMachine();
 
-  void update(bool file_transmission, bool strum, bool done, bool pause, bool restart);
+  void update(bool file_transmission, bool strum, bool done, bool pause,
+              bool restart);
 
-  STATE getState() {
-    return state_;
-  }
-  void setState(STATE newState) {
-    state_ = newState;
-  }
+  STATE getState() { return state_; }
+  STATE getPrevState() { return prevState_; }
+  void setState(STATE newState) { state_ = newState; }
 
 private:
-  STATE state_;
+  STATE prevState_, state_;
 };

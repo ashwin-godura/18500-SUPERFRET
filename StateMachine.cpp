@@ -2,6 +2,7 @@
 #include "StateMachine.h"
 
 StateMachine::StateMachine() {
+  prevState_ = WAIT_TO_START;
   state_ = WAIT_TO_START;
 }
 
@@ -52,5 +53,6 @@ void StateMachine::update(bool file_transmission, bool strum, bool done, bool pa
         break;
       }
   }
+  prevState_ = state_;
   state_ = nextState;
 }
