@@ -245,6 +245,7 @@ void setup() {
 void loop() {
   // TODO check if pi wants the system to be in TRAINING or CONTINUOUS mode
 
+  /*
   unsigned long long nextFretboardSampleTime = micros();
   while (true) {
     if (nextFretboardSampleTime <=
@@ -272,6 +273,7 @@ void loop() {
       nextFretboardSampleTime += FRETBOARD_SAMPLING_PERIOD;
     }
   }
+  */
 
   while (fsm.getState() == WAIT_TO_START) {
     pixels.clear(); // Set all pixel colors to 'off'
@@ -327,8 +329,8 @@ void loop() {
       nextFretboardSampleTime = micros();
     }
 
-    NOTE expected_note;
-    auto LED_idx;
+    NOTE_t expected_note;
+    uint8_t LED_idx;
     if (NOTE_IDX < NUM_NOTES_FOUND) {
       expected_note = notes[NOTE_IDX];
       LED_idx = get_LEDidx_from_note(expected_note.note);
