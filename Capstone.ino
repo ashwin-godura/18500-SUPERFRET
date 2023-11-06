@@ -502,7 +502,9 @@ void loop() {
 
         NOTE_IDX++;
       }
-    } else {
+    }
+
+    if (NOTE_IDX >= NUM_NOTES_FOUND) {
       Serial.println("Done with User Experience");
       fsm.update(false, false, true, false, false);
     }
