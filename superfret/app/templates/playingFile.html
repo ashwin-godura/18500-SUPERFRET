@@ -14,7 +14,7 @@
 
     <button id="spawnButton">Spawn Block</button>
     <button id="close-button" onclick=stopFile()>Stop</button>
-    <button id="listen-button">Listen</button>
+    <button id="listen-button">Not Listening</button>
     <!-- <button id="deleteButton">delete Block</button> -->
     <canvas id="myCanvas" width="1200" height="500"></canvas>
 
@@ -58,9 +58,14 @@
         //attach a click listener to a play button
         document.getElementById('listen-button').addEventListener('click', async () => {
             await Tone.start()
-            // synth.triggerAttackRelease(440);
             listening = !listening;
-            console.log('audio is ready')
+            var listenButtonText = ""
+            if (listening) {
+                listenButtonText = "Listening Now"
+            } else {
+                listenButtonText = "Not Listening"
+            }
+            document.getElementById('listen-button').innerText = listenButtonText
         })
 
         document.getElementById('spawnButton').addEventListener('click', function () {
@@ -146,7 +151,6 @@
                 ctx.fillRect(rect.x, rect.y, 30, 30);
 
                 if (rect.y >= rect.targetPosition) {
-                    console.log("note value: ", rect.noteValue)
                     playMidiSound(rect.noteValue)
                     // pause = true;
                     deleteBlock()
@@ -177,16 +181,12 @@
 
             var frequency = midiNoteToFrequency(note)
             Tone.start()
-            console.log("frequency: ", frequency)
             synth.triggerAttackRelease(frequency, "8n");
         }
 
         function midiNoteToFrequency(note) {
 
             var ratio = (note - 40) / 12
-            console.log("ratio: ", ratio)
-            console.log("note: ", note)
-
             return 82.4 * Math.pow(2, ratio);
         }
 
