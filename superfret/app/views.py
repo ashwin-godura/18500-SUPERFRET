@@ -28,9 +28,7 @@ def getHome(request):
    file = findactivefile()
 
    if not file is None:
-      context['activefile'] = True
-   else:
-      context['activefile'] = False
+      return redirect(reverse('playingFile'))
 
    context['MidiFileForm'] = AddFileForm()
    context['ScaleMidiFiles'] = MidiFiles.filter(type="scale")
@@ -65,7 +63,7 @@ def startfile(request, name):
    file.save()
    # u.start_song(str(file.file))
 
-   return redirect(reverse('movingblock'))
+   return redirect(reverse('playingFile'))
 
 def deletefile(request, name):
    file = findactivefile()
@@ -94,10 +92,10 @@ def findactivefile():
          return file
    return None
 
-def movingblock(request):
+def playingFile(request):
    active = findactivefile
    context = {"file": active}
-   return render(request, 'movingblock.html', context)
+   return render(request, 'playingFile.html', context)
 
 def getActiveFile(request):
    active = findactivefile()
