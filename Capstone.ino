@@ -2,7 +2,7 @@
 
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
-#include <avr/power.h> // Required for 16 MHz Adafruit Trinket
+#include <avr/power.h>  // Required for 16 MHz Adafruit Trinket
 #endif
 
 #include "MIDI.h"
@@ -11,24 +11,25 @@
 // extern Musical_note_TO_LED_idx[128][2];
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN 6 // On Trinket or Gemma, suggest changing this to 1
+#define PIN 6  // On Trinket or Gemma, suggest changing this to 1
 
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS 16 // Popular NeoPixel ring size
+#define NUMPIXELS 16  // Popular NeoPixel ring size
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-#define DELAYVAL 50 // Time (in milliseconds) to pause between pixels
+#define DELAYVAL 50  // Time (in milliseconds) to pause between pixels
 
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial2
 
-#define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3) // [us]
-#define MIN_TIME_BETWEEN_STRUMS (0.01e6)       // [us]
+#define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)  // [us]
+#define MIN_TIME_BETWEEN_STRUMS (0.01e6)        // [us]
 #define NUM_FRETS 15
-#define DIGITAL_DELAY 5 // [us]
+#define DIGITAL_DELAY 5  // [us]
 
-enum USER_MODE { TRAINING, CONTINUOUS };
+enum USER_MODE { TRAINING,
+                 CONTINUOUS };
 
 USER_MODE mode;
 
@@ -82,26 +83,26 @@ uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
   if (notePlayedOn_E_string) {
     // Serial.print("Detected press on E string, fret ");
     // Serial.println(fret);
-    return 0xEE; // TODO
+    return 0xEE;  // TODO
   } else if (notePlayedOn_A_string) {
     // Serial.print("Detected press on A string, fret ");
     // Serial.println(fret);
-    return 0xAA; // TODO
+    return 0xAA;  // TODO
   } else if (notePlayedOn_D_string) {
     // Serial.print("Detected press on D string, fret ");
     // Serial.println(fret);
-    return 0xDD; // TODO
+    return 0xDD;  // TODO
   } else if (notePlayedOn_G_string) {
     // Serial.print("Detected press on G string, fret ");
     // Serial.println(fret);
-    return 0xFF; // TODO
+    return 0xFF;  // TODO
   } else {
     return 0x0;
   }
 }
 
-void clearShiftRegister() { // clock a 0 though the shift register NUM_FRETS + 1
-                            // times to ensure it is cleared
+void clearShiftRegister() {  // clock a 0 though the shift register NUM_FRETS + 1
+                             // times to ensure it is cleared
   digitalWrite(fretSimulusPin, LOW);
   for (int fret = 0; fret < NUM_FRETS + 1; fret++) {
     digitalWrite(fretClockPin, LOW);
@@ -139,8 +140,8 @@ void sampleFrets() {
     bool notePlayedOn_G_string = digitalRead(G_stringPin);
     if (not notePlayed) {
       notePlayed = convertFretCoordinatesToNote(
-          notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string,
-          notePlayedOn_G_string, fret);
+        notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string,
+        notePlayedOn_G_string, fret);
     }
     //  else {
     //   Serial.println("notePlayed");
@@ -168,6 +169,7 @@ void samplePick() {
   D_stringPin_count = 0;
   G_stringPin_count = 0;
   bool currStrumDetection = false;
+  strum = false;
   //
   pinMode(pickPin, OUTPUT);
   digitalWrite(pickPin, HIGH);
@@ -182,8 +184,7 @@ void samplePick() {
   digitalWrite(pickPin, LOW);
   pinMode(pickPin, INPUT);
   //
-  if (E_stringPin_count || A_stringPin_count || D_stringPin_count ||
-      G_stringPin_count) {
+  if (E_stringPin_count || A_stringPin_count || D_stringPin_count || G_stringPin_count) {
     currStrumDetection = true;
   }
   // if (E_stringPin_count) {
@@ -195,18 +196,18 @@ void samplePick() {
   // } else if (G_stringPin_count) {
   //   Serial.println("Strum on G string");
   // }
-  strum = prevStrumDetection and not currStrumDetection;
-  if (strum) {
-    fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
+  if (prevStrumDetection and not currStrumDetection and MIN_TIME_BETWEEN_STRUMS < (micros() - timeOfLastStrum)) {
+    strum = true;
+    fsm.update(false, true, false, false, false);
     timeOfLastStrum = micros();
-    // Serial.println("Strummed");
+    Serial.println("Strummed");
   }
   prevStrumDetection = currStrumDetection;
   return false;
 }
 
 void setup() {
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
   Serial.begin(19200);
   HWSERIAL.begin(19200);
 
@@ -276,8 +277,8 @@ void loop() {
   */
 
   while (fsm.getState() == WAIT_TO_START) {
-    pixels.clear(); // Set all pixel colors to 'off'
-    pixels.show();  // Send the updated pixel colors to the hardware.
+    pixels.clear();  // Set all pixel colors to 'off'
+    pixels.show();   // Send the updated pixel colors to the hardware.
 
     delay(100);
     Serial.println("Waiting to start");
@@ -309,7 +310,7 @@ void loop() {
     // parsing the MIDI file
     parseMIDI();
     uS_per_tick =
-        (double)MICROSECONDS_PER_BEAT / (double)TICKS_PER_QUARTER_NOTE;
+      (double)MICROSECONDS_PER_BEAT / (double)TICKS_PER_QUARTER_NOTE;
     Serial.print("uS_per_tick: ");
     Serial.println(uS_per_tick, 10);
     printMIDI();
@@ -317,6 +318,7 @@ void loop() {
     while (fsm.getState() == WAIT_FOR_STRUM) {
       delay(100);
       Serial.println("Waiting for strum");
+      samplePick();
     }
   }
 
@@ -324,8 +326,8 @@ void loop() {
   while (fsm.getState() == USER_EXPERIENCE) {
     if (fsm.getPrevState() != USER_EXPERIENCE) {
       Serial.println("USER_EXPERIENCE");
-      pixels.clear(); // Set all pixel colors to 'off'
-      pixels.show();  // Send the updated pixel colors to the hardware.
+      pixels.clear();  // Set all pixel colors to 'off'
+      pixels.show();   // Send the updated pixel colors to the hardware.
       nextFretboardSampleTime = micros();
     }
 
@@ -353,7 +355,7 @@ void loop() {
 
         sampleFrets();
         samplePick();
-        if (notePlayed == expected_note.note) { // move onto the next note
+        if (notePlayed == expected_note.note) {  // move onto the next note
           Serial.print("Turning LED ");
           Serial.print(LED_idx);
           Serial.print(" OFF (note ");
@@ -362,8 +364,8 @@ void loop() {
           pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
           NOTE_IDX++;
         }
-        pixels.show(); // Send the updated pixel colors to the hardware.
-      } else {         // CONTINUOUS MODE
+        pixels.show();  // Send the updated pixel colors to the hardware.
+      } else {          // CONTINUOUS MODE
 
         // TODO aggregate stats
         auto us_duration = uS_per_tick * expected_note.duration;
@@ -372,12 +374,10 @@ void loop() {
 
         while (micros() < delayStartTime + delayTime) {
           // sample fretbaord and pick
-          if (nextFretboardSampleTime <=
-              micros()) { // enough time elapsed since last sample
+          if (nextFretboardSampleTime <= micros()) {  // enough time elapsed since last sample
             sampleFrets();
             samplePick();
-            if (notePlayed and strum and
-                ((micros() - timeOfLastStrum) < MIN_TIME_BETWEEN_STRUMS)) {
+            if (notePlayed and strum) {
               Serial.print("Detected note ");
               Serial.print(notePlayed, HEX);
               Serial.println(" played");
@@ -409,13 +409,14 @@ void loop() {
 
           pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
         }
-        pixels.show(); // Send the updated pixel colors to the hardware.
+        pixels.show();  // Send the updated pixel colors to the hardware.
         // auto end = micros();
         // Serial.println((end-start)/1.0e6, 10);
 
         NOTE_IDX++;
       }
     } else {
+      Serial.println("Done with User Experience");
       fsm.update(false, false, true, false, false);
     }
   }
