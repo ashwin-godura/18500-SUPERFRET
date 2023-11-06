@@ -71,6 +71,39 @@ void handleRestartInterrupt() {
   fsm.update(false, false, false, false, digitalRead(restartInterruptPin));
 }
 
+
+
+void printState() {
+  switch (fsm.getState()) {
+    case WAIT_TO_START:
+      {
+        Serial.println("FSM state: WAIT_TO_START");
+        break;
+      }
+    case RECEIVING_SONG:
+      {
+        Serial.println("FSM state: RECEIVING_SONG");
+        break;
+      }
+    case WAIT_FOR_STRUM:
+      {
+        Serial.println("FSM state: WAIT_FOR_STRUM");
+        break;
+      }
+    case USER_EXPERIENCE:
+      {
+        Serial.println("FSM state: USER_EXPERIENCE");
+        break;
+      }
+    case PAUSED:
+      {
+        Serial.println("FSM state: PAUSED");
+        break;
+      }
+  }
+}
+
+
 uint8_t get_LEDidx_from_note(uint8_t note) {
   // TODO index into a look-up table
   return note % NUMPIXELS;
@@ -187,6 +220,7 @@ void samplePick() {
   if (E_stringPin_count || A_stringPin_count || D_stringPin_count || G_stringPin_count) {
     currStrumDetection = true;
   }
+
   // if (E_stringPin_count) {
   //   Serial.println("Strum on E string");
   // } else if (A_stringPin_count) {
@@ -196,19 +230,20 @@ void samplePick() {
   // } else if (G_stringPin_count) {
   //   Serial.println("Strum on G string");
   // }
+
   if (prevStrumDetection and not currStrumDetection and MIN_TIME_BETWEEN_STRUMS < (micros() - timeOfLastStrum)) {
+    Serial.println("Strummed");
     strum = true;
     fsm.update(false, true, false, false, false);
     timeOfLastStrum = micros();
-    Serial.println("Strummed");
   }
+
   prevStrumDetection = currStrumDetection;
-  return false;
 }
 
 void setup() {
   pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
-  Serial.begin(19200);
+  Serial.begin(115200);
   HWSERIAL.begin(19200);
 
   pinMode(pickPin, INPUT);
@@ -315,20 +350,26 @@ void loop() {
     Serial.println(uS_per_tick, 10);
     printMIDI();
 
+    auto nextPrintTime = micros();
     while (fsm.getState() == WAIT_FOR_STRUM) {
-      delay(100);
-      Serial.println("Waiting for strum");
+      if (nextPrintTime < micros()) {
+        Serial.println("Waiting for strum");
+        nextPrintTime += 100e3;
+      }
       samplePick();
+      delay(10);
     }
   }
 
   unsigned long long nextFretboardSampleTime = 0;
+  bool first_time_in_user_experience = true;
   while (fsm.getState() == USER_EXPERIENCE) {
-    if (fsm.getPrevState() != USER_EXPERIENCE) {
+    if (first_time_in_user_experience) {
       Serial.println("USER_EXPERIENCE");
       pixels.clear();  // Set all pixel colors to 'off'
       pixels.show();   // Send the updated pixel colors to the hardware.
       nextFretboardSampleTime = micros();
+      first_time_in_user_experience = false;
     }
 
     NOTE_t expected_note;
@@ -424,5 +465,6 @@ void loop() {
   while (fsm.getState() == PAUSED) {
     Serial.println("Paused");
     delay(100);
+    samplePick();
   }
 }
