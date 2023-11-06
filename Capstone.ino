@@ -387,12 +387,15 @@ void loop() {
 
         assert(expected_note.note != 0x0);
 
-        Serial.print("Turning LED ");
-        Serial.print(LED_idx);
-        Serial.print(" ON (note ");
-        Serial.print(expected_note.note);
-        Serial.println(")");
-        pixels.setPixelColor(LED_idx, pixels.Color(0, 255, 0));
+        bool LED_already_ON = pixels.getPixelColor(LED_idx);
+        if (not LED_already_ON) {
+          Serial.print("Turning LED ");
+          Serial.print(LED_idx);
+          Serial.print(" ON (note ");
+          Serial.print(expected_note.note);
+          Serial.println(")");
+          pixels.setPixelColor(LED_idx, pixels.Color(0, 255, 0));
+        }
 
         sampleFrets();
         samplePick();
