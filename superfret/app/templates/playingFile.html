@@ -14,9 +14,11 @@
 
     <button id="spawnButton">Spawn Block</button>
     <button id="close-button" onclick=stopFile()>Stop</button>
+    <button id="listen-button">Listen</button>
     <!-- <button id="deleteButton">delete Block</button> -->
     <canvas id="myCanvas" width="1200" height="500"></canvas>
 
+    <script src="https://cdn.jsdelivr.net/npm/tone@14"></script>
     <script>
         let blockCount = 0;
         const String1Position = 363;
@@ -25,14 +27,39 @@
         const FretGap = 86;
         const interval = 10;
         const startPosition = 10;
+        // Initialize Tone.js for sound making
+        const synth = new Tone.Synth({
+			oscillator: {
+				type: "amtriangle",
+				harmonicity: 0.5,
+				modulationType: "sine"
+			},
+			envelope: {
+				attackCurve: "exponential",
+				attack: 0.05,
+				decay: 0.2,
+				sustain: 0.2,
+				release: 1.5,
+			},
+			portamento: 0.05
+		}).toDestination();
         const timeDelay =  (String1Position - startPosition) * interval / 1000 // how long it takes from spawning to actually playing, 
                                                               // idea is that block starts at start positions, moves once every interval milliseconds, 
                                                               // until it reaches string1position, so it will take ((string1position - startposition) * interval) / 1000
+
         var rectangles = [];
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         var pause = false;
         var speed = .5
+        var totalTimePaused = 0
+
+        //attach a click listener to a play button
+        document.getElementById('listen-button').addEventListener('click', async () => {
+            await Tone.start()
+            synth.triggerAttackRelease(440);
+            console.log('audio is ready')
+        })
 
         document.getElementById('spawnButton').addEventListener('click', function () {
             const stringNumber = (blockCount % 4) + 1;  // 1, 2, 3, or 4
@@ -48,7 +75,7 @@
             window.location.href = '/stopfile'
         }
 
-        function spawnBlock(fret, stringNumber) {
+        function spawnBlock(fret, stringNumber, noteValue) {
             switch (stringNumber) {
                 case 1: 
                     color = 'red';
@@ -70,7 +97,8 @@
                 x: xCoordinate,
                 y: startPosition - (StringGap * stringNumber),
                 targetPosition: targetPosition,
-                color: color
+                color: color,
+                noteValue: noteValue
             });
 
             blockCount++;
@@ -87,8 +115,9 @@
             notes.forEach(note => {
                 const startTimeInMilliseconds = (note.start_time * 1000) / speed;
                 setTimeout(() => {
-                    // console.log("Note pitch: ", note.note_value, " string: ", note.string, " fret: ", note.fret)
-                    spawnBlock(note.fret, note.string);
+                    console.log("Note pitch: ", note.note_value, " string: ", note.string, " fret: ", note.fret)
+
+                    spawnBlock(note.fret, note.string, note.noteValue);
                 }, startTimeInMilliseconds);
             });
         }
@@ -116,7 +145,9 @@
                 ctx.fillRect(rect.x, rect.y, 30, 30);
 
                 if (rect.y >= rect.targetPosition) {
-                    pause = true;
+                    console.log("note value: ", rect.noteValue)
+                    playMidiSound(rect.noteValue)
+                    // pause = true;
                     deleteBlock()
                 }
                 else {
@@ -138,6 +169,25 @@
                 });
 
         }
+
+        // Function to play a MIDI note
+        function playMidiSound(note) {
+            var frequency = midiNoteToFrequency(note)
+            Tone.start()
+            note *= 2
+            console.log("frequency: ", frequency)
+            synth.triggerAttackRelease(note);
+        }
+
+        function midiNoteToFrequency(note) {
+
+            var ratio = (note - 40) / 12
+            console.log("ratio: ", ratio)
+            console.log("note: ", note)
+
+            return 82.4 * Math.pow(2, (note - 40) / 12);
+        }
+
 
         // Call the function when the page loads
         window.onload = fetchMidi;

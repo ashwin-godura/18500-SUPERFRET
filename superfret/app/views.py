@@ -100,6 +100,7 @@ def playingFile(request):
 def getActiveFile(request):
    active = findactivefile()
    notes =  app.MidiFileReader.extract_notes_from_midi(active.file)
+   print("notes:", notes)
    data = {
       'notes': notes,
    }
