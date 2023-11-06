@@ -116,19 +116,59 @@ uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
   if (notePlayedOn_E_string) {
     // Serial.print("Detected press on E string, fret ");
     // Serial.println(fret);
-    return 0xEE;  // TODO
+    if (fret == 0) {
+      return 0x43;  // verified
+    } else if (fret == 1) {
+      return 0x47;
+    } else if (fret == 2) {
+      return 0x4B;
+    } else if (fret == 3) {
+      return 0x00;
+    } else if (fret == 4) {
+      return 0x00;
+    }
   } else if (notePlayedOn_A_string) {
     // Serial.print("Detected press on A string, fret ");
     // Serial.println(fret);
-    return 0xAA;  // TODO
+    if (fret == 0) {
+      return 0x42;
+    } else if (fret == 1) {
+      return 0x46;
+    } else if (fret == 2) {
+      return 0x4A;
+    } else if (fret == 3) {
+      return 0x3E;
+    } else if (fret == 4) {
+      return 0x00;
+    }
   } else if (notePlayedOn_D_string) {
     // Serial.print("Detected press on D string, fret ");
     // Serial.println(fret);
-    return 0xDD;  // TODO
+    if (fret == 0) {
+      return 0x41;  // verified
+    } else if (fret == 1) {
+      return 0x45;
+    } else if (fret == 2) {
+      return 0x49;
+    } else if (fret == 3) {
+      return 0x3D;
+    } else if (fret == 4) {
+      return 0x00;
+    }
   } else if (notePlayedOn_G_string) {
     // Serial.print("Detected press on G string, fret ");
     // Serial.println(fret);
-    return 0xFF;  // TODO
+    if (fret == 0) {
+      return 0x40;
+    } else if (fret == 1) {
+      return 0x44;
+    } else if (fret == 2) {
+      return 0x48;
+    } else if (fret == 3) {
+      return 0x3C;  // verified
+    } else if (fret == 4) {
+      return 0x00;
+    }
   } else {
     return 0x0;
   }
@@ -171,14 +211,13 @@ void sampleFrets() {
     bool notePlayedOn_A_string = digitalRead(A_stringPin);
     bool notePlayedOn_D_string = digitalRead(D_stringPin);
     bool notePlayedOn_G_string = digitalRead(G_stringPin);
-    if (not notePlayed) {
+    if (not notePlayed) {  // if already sensed a note, don't read again and potentially overwrite it.
       notePlayed = convertFretCoordinatesToNote(
         notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string,
         notePlayedOn_G_string, fret);
+    } else {
+      Serial.println(notePlayed, HEX);
     }
-    //  else {
-    //   Serial.println("notePlayed");
-    // }
     digitalWrite(fretClockPin, LOW);
     delayMicroseconds(DIGITAL_DELAY);
     digitalWrite(fretClockPin, HIGH);
@@ -399,7 +438,11 @@ void loop() {
 
         sampleFrets();
         samplePick();
-        if (notePlayed == expected_note.note) {  // move onto the next note
+
+        Serial.println(notePlayed, HEX);
+        Serial.println(expected_note.note, HEX);
+
+        if (strum and notePlayed == expected_note.note) {  // move onto the next note
           Serial.print("Turning LED ");
           Serial.print(LED_idx);
           Serial.print(" OFF (note ");
