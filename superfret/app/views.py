@@ -6,6 +6,7 @@ from django.http import HttpResponse, Http404
 
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
+from django.http import JsonResponse
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -15,6 +16,7 @@ from app.models import MidiFile
 import os
 
 # from app.uart import Uart
+import app.MidiFileReader
 
 # u = Uart()
 
@@ -56,24 +58,24 @@ def addFile(request):
 def startfile(request, name):
    file = findactivefile()
    if file is not None:
-      return getHome(request)
+      return redirect(reverse('home'))
    
    file = MidiFile.objects.all().filter(name=name)[0]
    file.active = True
    file.save()
    # u.start_song(str(file.file))
 
-   return getHome(request)
+   return redirect(reverse('movingblock'))
 
 def deletefile(request, name):
    file = findactivefile()
    if file is not None:
-      return getHome(request)
+      return redirect(reverse('home'))
    
    file = MidiFile.objects.all().filter(name=name)[0]
    os.remove(str(file.file))
    file.delete()
-   return getHome(request)
+   return redirect(reverse('home'))
 
 
 def stopfile(request):
@@ -82,7 +84,7 @@ def stopfile(request):
    file.save()
    # u.stop_song()
       
-   return getHome(request)
+   return redirect(reverse('home'))
 
 
 def findactivefile():
@@ -93,4 +95,14 @@ def findactivefile():
    return None
 
 def movingblock(request):
-    return render(request, 'movingblock.html')
+   active = findactivefile
+   context = {"file": active}
+   return render(request, 'movingblock.html', context)
+
+def getActiveFile(request):
+   active = findactivefile()
+   notes =  app.MidiFileReader.extract_notes_from_midi(active.file)
+   data = {
+      'notes': notes,
+   }
+   return JsonResponse(data)

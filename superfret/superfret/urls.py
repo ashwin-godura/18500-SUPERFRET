@@ -26,4 +26,5 @@ urlpatterns = [
     path('deletefile/<str:name>/', views.deletefile, name='deletefile'),
     path('stopfile', views.stopfile, name='stopfile'),
     path('movingblock', views.movingblock, name='movingblock'),
+    path('getActiveFile', views.getActiveFile, name='getActiveFile'),
 ]
