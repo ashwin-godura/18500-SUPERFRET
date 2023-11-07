@@ -12,8 +12,8 @@
 
     <h1>You are playing {{file.name}}</h1>
 
-    <button id="spawnButton">Spawn Block</button>
     <button id="close-button" onclick=stopFile()>Stop</button>
+    <button id="close-button" onclick=deleteBlock()>deleteBlock</button>
     <button id="listen-button">Not Listening</button>
     <!-- <button id="deleteButton">delete Block</button> -->
     <canvas id="myCanvas" width="1200" height="500"></canvas>
@@ -27,6 +27,8 @@
         const FretGap = 86;
         const interval = 10;
         const startPosition = 10;
+        const playSpeed = .5
+        const update_speed = 1
         // Initialize Tone.js for sound making
         const synth = new Tone.Synth({
 			oscillator: {
@@ -47,12 +49,12 @@
                                                               // idea is that block starts at start positions, moves once every interval milliseconds, 
                                                               // until it reaches string1position, so it will take ((string1position - startposition) * interval) / 1000
 
+        const pixels_per_second = update_speed / (interval / 1000)
+
         var rectangles = [];
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         var pause = false;
-        var speed = .5
-        var totalTimePaused = 0
         var listening = false
 
         //attach a click listener to a play button
@@ -68,12 +70,6 @@
             document.getElementById('listen-button').innerText = listenButtonText
         })
 
-        document.getElementById('spawnButton').addEventListener('click', function () {
-            const stringNumber = (blockCount % 4) + 1;  // 1, 2, 3, or 4
-            const fretNumber = (blockCount % 12) + 1; // 1-12
-            spawnBlock(fretNumber, stringNumber, 4);
-        });
-
         // document.getElementById('deleteButton').addEventListener('click', function () {
 
         //     deleteBlock()
@@ -82,7 +78,7 @@
             window.location.href = '/stopfile'
         }
 
-        function spawnBlock(fret, stringNumber, note_Value) {
+        function spawnBlock(fret, stringNumber, note_Value, time_played) {
             switch (stringNumber) {
                 case 1: 
                     color = 'red';
@@ -97,35 +93,43 @@
                     color = 'yellow';
                     break;
             }
-            targetPosition = String1Position - (StringGap * stringNumber)
+            targetPosition = String1Position - (StringGap * stringNumber) 
             xCoordinate = Fret1Position + FretGap * fret
+            yCoordinate = startPosition - time_played * pixels_per_second - (StringGap * stringNumber) 
 
             rect = {
                 x: xCoordinate,
-                y: startPosition - (StringGap * stringNumber),
+                y: yCoordinate,
                 targetPosition: targetPosition,
                 color: color,
                 noteValue: note_Value
             }
             rectangles.push(rect);
 
+            console.log("spawned block with time=",time_played," at ycoord=" + yCoordinate)
+
             blockCount++;
         }
 
         function deleteBlock() {
             // Remove the completed rectangle
+            if (rectangles.length == 0) {
+                return
+            }
+            var rect = rectangles[0]
             rectangles.splice(0, 1);
+            playMidiSound(rect.noteValue)
             pause = false
             // i--; // Adjust the index for the next iteration
         }
 
         function playNotes(notes) {
-            notes.forEach(note => {
-                const startTimeInMilliseconds = (note.start_time * 1000) / speed;
-                setTimeout(() => {
-                    spawnBlock(note.fret, note.string, note.note_value);
-                }, startTimeInMilliseconds);
-            });
+
+            for (var i = 0; i < notes.length; i++) {
+                note = notes[i]
+                spawnBlock(note.fret, note.string, note.note_value, note.start_time / playSpeed);
+            }
+            setInterval(animate, interval)
         }
 
         function animate() {
@@ -145,18 +149,19 @@
 
                 ctx.strokeStyle = rect.color;
                 ctx.fillStyle = rect.color;
-
                 ctx.lineWidth = 3;
-                ctx.strokeRect(rect.x, rect.targetPosition, 30, 30);
+
+                if (rect.y > 0) {
+                    ctx.strokeRect(rect.x, rect.targetPosition, 30, 30);
+                }
                 ctx.fillRect(rect.x, rect.y, 30, 30);
 
                 if (rect.y >= rect.targetPosition) {
-                    playMidiSound(rect.noteValue)
-                    // pause = true;
-                    deleteBlock()
+                    pause = true;
+                    // deleteBlock()
                 }
                 else {
-                    rect.y += 1; // Update the position
+                    rect.y += update_speed; // Update the position
                 }
             }
         }
@@ -178,14 +183,12 @@
         // Function to play a MIDI note
         function playMidiSound(note) {
             if (listening == false) return
-
             var frequency = midiNoteToFrequency(note)
             Tone.start()
             synth.triggerAttackRelease(frequency, "8n");
         }
 
         function midiNoteToFrequency(note) {
-
             var ratio = (note - 40) / 12
             return 82.4 * Math.pow(2, ratio);
         }
@@ -193,10 +196,6 @@
 
         // Call the function when the page loads
         window.onload = fetchMidi;
-
-        setInterval(animate, interval)    
-
-
     </script>
 
 </body>
