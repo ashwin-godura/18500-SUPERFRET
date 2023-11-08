@@ -3,7 +3,7 @@ import serial
 import time
 
 class Uart:
-    def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27):
+    def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27, restart_pin=28):
         # Initialize UART
         self.uart = serial.Serial(uart_port, 9600, timeout=1)
 
@@ -11,11 +11,13 @@ class Uart:
         self.start_pin = start_pin
         self.stop_pin = stop_pin
         self.pause_pin = pause_pin
+        self.restart_pin = restart_pin
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.start_pin, GPIO.OUT)
         GPIO.setup(self.stop_pin, GPIO.OUT)
         GPIO.setup(self.pause_pin, GPIO.OUT)
+        GPIO.setup(self.restart_pin, GPIO.OUT)
         self.set_gpio_low(self.start_pin)
         self.set_gpio_low(self.stop_pin)
         self.set_gpio_low(self.pause_pin)
@@ -42,17 +44,23 @@ class Uart:
         except Exception as e:
             print(f"Error in start_song: {e}")
 
-    def stop_song(self):
+    def pause_song(self):
         try:
-            # Trigger dedicated GPIO interrupt for stop_song
-            self.set_gpio_high(self.stop_pin)
-            time.sleep(0.1)  # Briefly set GPIO pin high
-            self.set_gpio_low(self.stop_pin)
+            # Trigger dedicated GPIO interrupt for pause_song
+            self.set_gpio_high(self.pause_pin)
 
         except Exception as e:
-            print(f"Error in stop_song: {e}")
+            print(f"Error in pause_song: {e}")
 
-    def pause_song(self):
+    def resume_song(self):
+        try:
+            # Trigger dedicated GPIO interrupt for pause_song
+            self.set_gpio_low(self.pause_pin)
+
+        except Exception as e:
+            print(f"Error in pause_song: {e}")
+
+    def restart_song(self):
         try:
             # Trigger dedicated GPIO interrupt for pause_song
             self.set_gpio_high(self.pause_pin)
