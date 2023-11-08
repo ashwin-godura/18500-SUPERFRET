@@ -80,7 +80,7 @@ def stopfile(request):
    if file is not None:
       file.active = False
       file.save()
-   # u.stop_song()
+   u.restart_song()
       
    return redirect(reverse('home'))
 
@@ -104,15 +104,26 @@ def findactivefile():
    return None
 
 def playingFile(request):
-   active = findactivefile
-   context = {"file": active}
+   active = findactivefile()
+   if active is None:
+      return redirect(reverse('home'))
+   
+   tracks = app.MidiFileReader.get_midi_tracks(active.file)
+   print(tracks)
+   context = {
+      "file": active,
+      "tracks": tracks
+   }
    return render(request, 'playingFile.html', context)
 
 def getActiveFile(request):
+   speed = int(request.GET.get('speed', 1))
+   track = str(request.GET.get('track', ""))
+
    active = findactivefile()
+   u.restart_song()
    u.start_song(str(active.file))
-   notes =  app.MidiFileReader.extract_notes_from_midi(active.file)
-   print("notes:", notes)
+   notes =  app.MidiFileReader.extract_notes_from_midi(active.file, speed, track)
    data = {
       'notes': notes,
    }

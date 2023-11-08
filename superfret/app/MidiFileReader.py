@@ -5,7 +5,7 @@ import pretty_midi
 
 MAX_FRET_VALUE = 12
 
-def extract_notes_from_track(track):
+def extract_notes_from_track(track, speed):
     notes = []
     current_time = 0
 
@@ -17,7 +17,7 @@ def extract_notes_from_track(track):
         prevstring = string
         note_dict = {
             "note_value": note.pitch,
-            "start_time": note.start,
+            "start_time": (note.start * 5) / speed,
             "fret": fret,
             "string": string
         }
@@ -25,12 +25,13 @@ def extract_notes_from_track(track):
 
     return notes
 
-def extract_notes_from_midi(midi_file_path):
+def extract_notes_from_midi(midi_file_path, speed, track):
     midi_data = pretty_midi.PrettyMIDI(midi_file_path)
 
     target_track = None
     for idx, instrument in enumerate(midi_data.instruments):
-        if "bass" in instrument.name.lower():
+        print("requested track: " +track+ " actual track: " + instrument.name)
+        if track in instrument.name:
             target_track = midi_data.instruments[idx]
             break
 
@@ -38,7 +39,7 @@ def extract_notes_from_midi(midi_file_path):
         # print("No track named 'bass' found. Selecting the last track.")
         target_track = midi_data.instruments[-1]
 
-    return extract_notes_from_track(target_track)
+    return extract_notes_from_track(target_track, speed)
 
 def midi_to_bass_fret_string(midi_note, prev_fret, prev_string):
     # Define the standard tuning for a 4-string bass guitar (E1, A1, D2, G2)
@@ -69,6 +70,26 @@ def midi_to_bass_fret_string(midi_note, prev_fret, prev_string):
             string_answer = string + 1
 
     return fret_answer, string_answer
+
+def get_midi_tracks(filepath):
+    try:
+
+        # Use pretty_midi to parse the MIDI file
+        pretty_midi_obj = pretty_midi.PrettyMIDI(filepath)
+
+        # Extract information about tracks
+        tracks_info = []
+        print("starting loop")
+        for i, instrument in enumerate(pretty_midi_obj.instruments):
+            print(instrument.name)
+            tracks_info.append(instrument.name)
+
+        return tracks_info
+
+    except Exception as e:
+        # Handle exceptions, e.g., file not found, invalid MIDI file, etc.
+        print(f"Error: {e}")
+        return None
 
 def main():
     midi_file_path = "static/Twinkle Twinkle Little Star.mid"  # Replace with the path to your MIDI file

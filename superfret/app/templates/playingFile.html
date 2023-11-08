@@ -13,16 +13,14 @@
     <h1>You are playing {{file.name}}</h1>
 
 
-    <form id="form" onsubmit="submitForm();">
-        {% csrf_token %}
         <label for="speed">Speed:</label>
         <input type="range" id="speed" name="speed" min="1" max="10" step="1" value="5">
     
-        <label for="options">Select an option:</label>
+        <label for="options">Select a track:</label>
         <select id="options" name="options">
-          <option value="option1">Option 1</option>
-          <option value="option2">Option 2</option>
-          <option value="option3">Option 3</option>
+          {% for name in tracks %}
+            <option value="{{name}}">{{name}}</option>
+          {% endfor %}
         </select>
     
         <label>Mode:</label>
@@ -33,21 +31,15 @@
           <input type="radio" name="mode" value="performance"> Performance
         </label>
     
-        <button type="submit">Submit</button>
-      </form>
+        <button onclick=submitForm()>Submit</button>
 
     <button id="close-button" onclick=stopFile()>Stop</button>
-    <button id="pause-button" onclick=pauseFile()>pause</button>
-    <button id="restart-button" onclick=restartFile()>restartBlock</button>
-    <button id="delete-button" onclick=deleteBlock()>deleteBlock</button>
+    <button id="pause-button" onclick=pauseFile()>Pause</button>
+    <button id="restart-button" onclick=restartFile()>Restart</button>
+    <button id="delete-button" onclick=deleteBlock()>Simulate Strum</button>
     <button id="listen-button" onclick="toggleListening()">Not Listening</button>
     <!-- <button id="deleteButton">delete Block</button> -->
     <canvas id="myCanvas" width="1200" height="500"></canvas>
-
-
-
-
-
 
 
 
@@ -69,7 +61,6 @@
         const FretGap = 86;
         const interval = 10;
         const startPosition = 10;
-        const playSpeed = .5
         const update_speed = 1
         // Initialize Tone.js for sound making
         const synth = new Tone.Synth({
@@ -98,6 +89,10 @@
         var ctx = canvas.getContext("2d");
         var pause = false;
         var listening = false
+        var intervalId
+        var mode = training
+        var playSpeed = 1
+        var currentTrack = ""
 
 
         function toggleListening() {
@@ -122,12 +117,24 @@
         }
 
         function pauseFile() {
-            window.location.href = '/pausefile'
+            fetch('/pausefile')
+            pause = !pause
             return false
         }
 
         function restartFile() {
-            window.location.href = '/restartfile'
+            var track = currentTrack
+
+            fetch('/getActiveFile?speed=' + 5 + "&track=" + track)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the response data
+                    console.log(data.notes)
+                    playNotes(data.notes);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             return false
         }
 
@@ -159,7 +166,7 @@
             }
             rectangles.push(rect);
 
-            console.log("spawned block with time=",time_played," at ycoord=" + yCoordinate)
+            // console.log("spawned block with time=",time_played," at ycoord=" + yCoordinate)
 
             blockCount++;
         }
@@ -177,12 +184,16 @@
         }
 
         function playNotes(notes) {
-
+            clearInterval(intervalId)
+            rectangles = []
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pause = false
+            // pause = true
             for (var i = 0; i < notes.length; i++) {
                 note = notes[i]
                 spawnBlock(note.fret, note.string, note.note_value, note.start_time / playSpeed);
             }
-            setInterval(animate, interval)
+            intervalId = setInterval(animate, interval)
         }
 
         function animate() {
@@ -210,8 +221,11 @@
                 ctx.fillRect(rect.x, rect.y, 30, 30);
 
                 if (rect.y >= rect.targetPosition) {
-                    pause = true;
-                    // deleteBlock()
+                    if (mode == "performance") {
+                        deleteBlock()
+                    } else {
+                        pause = true
+                    }
                 }
                 else {
                     rect.y += update_speed; // Update the position
@@ -234,52 +248,28 @@
         }
 
         function submitForm() {
-            var speed = $('#speed').val();
-            var options = $('#options').val();
-            var mode = $('input[name="mode"]:checked').val();
-            var csrftoken = getCookie('csrftoken');
-            console.log(csrftoken)
 
-            // AJAX request to send data to the server
-            $.ajax({
-                url: '/getActiveFile',  // Replace with the actual URL endpoint
-                method: 'POST',
-                headers: {
-                'X-CSRFToken': csrftoken
-                },
-                data: {
-                    'speed': speed,
-                    'options': options,
-                    'mode': mode
-                },
-                success: function(response) {
-                    // Handle the server response
-                    playNotes(response.notes);
-                    console.log(response);
-                },
-                error: function(error) {
-                    // Handle errors
-                    console.error(error);
-                }
-            });
+            speed = $('#speed').val();
+            var track = $('#options').val();
+            mode = $('input[name="mode"]:checked').val();
+
+            playSpeed = speed / 5
+
+
+
+            console.log(speed + " " + track + " " + mode)
+
+            fetch('/getActiveFile?speed=' + 5 + "&track=" + track)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the response data
+                    console.log(data.notes)
+                    playNotes(data.notes);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
-
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    // Check if the cookie name matches the expected format
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
 
         // Call the function when the page loads
         // window.onload = fetchMidi;
