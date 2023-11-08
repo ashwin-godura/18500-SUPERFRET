@@ -61,7 +61,6 @@ def startfile(request, name):
    file = MidiFile.objects.all().filter(name=name)[0]
    file.active = True
    file.save()
-   # u.start_song(str(file.file))
 
    return redirect(reverse('playingFile'))
 
@@ -84,6 +83,17 @@ def stopfile(request):
       
    return redirect(reverse('home'))
 
+def pausefile(request):
+
+   # u.stop_song()
+      
+   return redirect(reverse('home'))
+
+def restartfile(request):
+   # u.stop_song()
+      
+   return redirect(reverse('home'))
+
 
 def findactivefile():
    files = MidiFile.objects.all()
@@ -99,6 +109,7 @@ def playingFile(request):
 
 def getActiveFile(request):
    active = findactivefile()
+   # u.start_song(str(file.file))
    notes =  app.MidiFileReader.extract_notes_from_midi(active.file)
    print("notes:", notes)
    data = {

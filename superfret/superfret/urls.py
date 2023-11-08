@@ -25,6 +25,7 @@ urlpatterns = [
     path('startfile/<str:name>/', views.startfile, name='startfile'),
     path('deletefile/<str:name>/', views.deletefile, name='deletefile'),
     path('stopfile', views.stopfile, name='stopfile'),
+    path('pausefile', views.pausefile, name='pausefile'),
     path('playingFile', views.playingFile, name='playingFile'),
     path('getActiveFile', views.getActiveFile, name='getActiveFile'),
 ]

@@ -5,15 +5,40 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Block Moving Page</title>
-
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <title>Playing File</title>
 </head>
 <body>
 
     <h1>You are playing {{file.name}}</h1>
 
+
+    <form id="form" onsubmit="submitForm();">
+        {% csrf_token %}
+        <label for="speed">Speed:</label>
+        <input type="range" id="speed" name="speed" min="1" max="10" step="1" value="5">
+    
+        <label for="options">Select an option:</label>
+        <select id="options" name="options">
+          <option value="option1">Option 1</option>
+          <option value="option2">Option 2</option>
+          <option value="option3">Option 3</option>
+        </select>
+    
+        <label>Mode:</label>
+        <label>
+          <input type="radio" name="mode" value="training" checked> Training
+        </label>
+        <label>
+          <input type="radio" name="mode" value="performance"> Performance
+        </label>
+    
+        <button type="submit">Submit</button>
+      </form>
+
     <button id="close-button" onclick=stopFile()>Stop</button>
     <button id="pause-button" onclick=pauseFile()>pause</button>
+    <button id="restart-button" onclick=restartFile()>deleteBlock</button>
     <button id="delete-button" onclick=deleteBlock()>deleteBlock</button>
     <button id="listen-button" onclick="toggleListening()">Not Listening</button>
     <!-- <button id="deleteButton">delete Block</button> -->
@@ -77,6 +102,14 @@
         // });
         function stopFile() {
             window.location.href = '/stopfile'
+        }
+
+        function pauseFile() {
+            window.location.href = '/stopfile'
+        }
+
+        function restartFile() {
+            window.location.href = '/restartfile'
         }
 
         function spawnBlock(fret, stringNumber, note_Value, time_played) {
@@ -167,19 +200,6 @@
             }
         }
 
-        function fetchMidi() {
-            var notes
-            fetch('/getActiveFile')
-                .then(response => response.json())
-                .then(data => {
-                    // Handle the response data
-                    playNotes(data.notes);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-
-        }
 
         // Function to play a MIDI note
         function playMidiSound(note) {
@@ -194,9 +214,56 @@
             return 82.4 * Math.pow(2, ratio);
         }
 
+        function submitForm() {
+            var speed = $('#speed').val();
+            var options = $('#options').val();
+            var mode = $('input[name="mode"]:checked').val();
+            var csrftoken = getCookie('csrftoken');
+            console.log(csrftoken)
+
+            // AJAX request to send data to the server
+            $.ajax({
+                url: '/getActiveFile',  // Replace with the actual URL endpoint
+                method: 'POST',
+                headers: {
+                'X-CSRFToken': csrftoken
+                },
+                data: {
+                    'speed': speed,
+                    'options': options,
+                    'mode': mode
+                },
+                success: function(response) {
+                    // Handle the server response
+                    playNotes(response.notes);
+                    console.log(response);
+                },
+                error: function(error) {
+                    // Handle errors
+                    console.error(error);
+                }
+            });
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Check if the cookie name matches the expected format
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
 
         // Call the function when the page loads
-        window.onload = fetchMidi;
+        // window.onload = fetchMidi;
     </script>
 
 </body>
