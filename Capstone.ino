@@ -48,10 +48,16 @@ int NOTE_IDX = 0;
 #define D_stringPin 26
 #define G_stringPin 27
 
-#define fileTransmissionInterruptPin 23
-#define strumInterruptPin 22
-#define pauseInterruptPin 21
-#define restartInterruptPin 20
+#define fileTransmissionInterruptPin 19
+#define pauseInterruptPin 18
+#define restartInterruptPin 17
+#define UNUSED_INTERRUPT_4 15
+#define UNUSED_INTERRUPT_5 14
+#define UNUSED_INTERRUPT_6 13
+#define UNUSED_INTERRUPT_7 40
+#define UNUSED_INTERRUPT_8 39
+#define UNUSED_INTERRUPT_9 38
+#define UNUSED_INTERRUPT_10 37
 
 void handleFileInterrupt() {
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false,
@@ -294,6 +300,17 @@ void setup() {
   pinMode(A_stringPin, INPUT);
   pinMode(D_stringPin, INPUT);
   pinMode(G_stringPin, INPUT);
+
+  // declaring unused interrupt pins as input becuase 
+  // they are connected to the PI so we don't accidentally 
+  // backdrive the PI
+  pinMode(UNUSED_INTERRUPT_4, INPUT);
+  pinMode(UNUSED_INTERRUPT_5, INPUT);
+  pinMode(UNUSED_INTERRUPT_6, INPUT);
+  pinMode(UNUSED_INTERRUPT_7, INPUT);
+  pinMode(UNUSED_INTERRUPT_8, INPUT);
+  pinMode(UNUSED_INTERRUPT_9, INPUT);
+  pinMode(UNUSED_INTERRUPT_10, INPUT);
 
   pinMode(fileTransmissionInterruptPin, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(fileTransmissionInterruptPin),
