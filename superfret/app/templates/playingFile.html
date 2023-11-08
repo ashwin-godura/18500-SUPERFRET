@@ -38,11 +38,27 @@
 
     <button id="close-button" onclick=stopFile()>Stop</button>
     <button id="pause-button" onclick=pauseFile()>pause</button>
-    <button id="restart-button" onclick=restartFile()>deleteBlock</button>
+    <button id="restart-button" onclick=restartFile()>restartBlock</button>
     <button id="delete-button" onclick=deleteBlock()>deleteBlock</button>
     <button id="listen-button" onclick="toggleListening()">Not Listening</button>
     <!-- <button id="deleteButton">delete Block</button> -->
     <canvas id="myCanvas" width="1200" height="500"></canvas>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/tone@14"></script>
     <script>
@@ -102,14 +118,17 @@
         // });
         function stopFile() {
             window.location.href = '/stopfile'
+            return false
         }
 
         function pauseFile() {
-            window.location.href = '/stopfile'
+            window.location.href = '/pausefile'
+            return false
         }
 
         function restartFile() {
             window.location.href = '/restartfile'
+            return false
         }
 
         function spawnBlock(fret, stringNumber, note_Value, time_played) {

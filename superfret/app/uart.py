@@ -3,7 +3,7 @@ import serial
 import time
 
 class Uart:
-    def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27, restart_pin=28):
+    def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27, restart_pin=22):
         # Initialize UART
         self.uart = serial.Serial(uart_port, 9600, timeout=1)
 
@@ -29,6 +29,7 @@ class Uart:
         GPIO.output(pin, GPIO.LOW)
 
     def start_song(self, file_path):
+        print("sending file")
         try:
             # Trigger dedicated GPIO interrupt for start_song
             self.set_gpio_high(self.start_pin)
@@ -42,7 +43,10 @@ class Uart:
             self.set_gpio_low(self.start_pin)
 
         except Exception as e:
+            self.set_gpio_low(self.start_pin)
             print(f"Error in start_song: {e}")
+
+        print("file sent")
 
     def pause_song(self):
         try:
@@ -63,9 +67,10 @@ class Uart:
     def restart_song(self):
         try:
             # Trigger dedicated GPIO interrupt for pause_song
-            self.set_gpio_high(self.pause_pin)
-            time.sleep(0.1)  # Briefly set GPIO pin high
+            self.set_gpio_high(self.restart_pin)
             self.set_gpio_low(self.pause_pin)
+            time.sleep(0.1)  # Briefly set GPIO pin high
+            self.set_gpio_low(self.restart_pin)
 
         except Exception as e:
             print(f"Error in pause_song: {e}")

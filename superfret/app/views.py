@@ -15,10 +15,10 @@ from app.forms import AddFileForm
 from app.models import MidiFile
 import os
 
-# from app.uart import Uart
+from app.uart import Uart
 import app.MidiFileReader
 
-# u = Uart()
+u = Uart()
 
 def getHome(request):  
    context = {}
@@ -77,20 +77,21 @@ def deletefile(request, name):
 
 def stopfile(request):
    file = findactivefile()
-   file.active = False
-   file.save()
+   if file is not None:
+      file.active = False
+      file.save()
    # u.stop_song()
       
    return redirect(reverse('home'))
 
 def pausefile(request):
 
-   # u.stop_song()
+   u.pause_song()
       
    return redirect(reverse('home'))
 
 def restartfile(request):
-   # u.stop_song()
+   u.restart_song()
       
    return redirect(reverse('home'))
 
@@ -109,7 +110,7 @@ def playingFile(request):
 
 def getActiveFile(request):
    active = findactivefile()
-   # u.start_song(str(file.file))
+   u.start_song(str(active.file))
    notes =  app.MidiFileReader.extract_notes_from_midi(active.file)
    print("notes:", notes)
    data = {
