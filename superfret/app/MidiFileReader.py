@@ -7,8 +7,6 @@ MAX_FRET_VALUE = 12
 
 def extract_notes_from_track(track, speed):
     notes = []
-    current_time = 0
-
     prevfret = 0
     prevstring = 1
     for note in track.notes:
@@ -88,6 +86,30 @@ def get_midi_tracks(filepath):
 
     except Exception as e:
         # Handle exceptions, e.g., file not found, invalid MIDI file, etc.
+        print(f"Error: {e}")
+        return None
+    
+def process_midi_for_teensy(midi_file_path, selected_track, speed_factor):
+    try:
+        # Load the MIDI file using pretty_midi
+        midi_data = pretty_midi.PrettyMIDI(midi_file_path)
+
+        # Select the specified track
+        selected_instrument = midi_data.instruments[selected_track]
+
+        # Adjust the tempo by the speed factor
+        midi_data.adjust_tempo(speed_factor)
+
+        # Create a new PrettyMIDI object with only the selected track
+        new_midi_data = pretty_midi.PrettyMIDI()
+        new_midi_data.instruments.append(selected_instrument)
+
+        # Convert the PrettyMIDI object to bytes
+        midi_bytes = new_midi_data.write()
+
+        return midi_bytes
+
+    except Exception as e:
         print(f"Error: {e}")
         return None
 

@@ -32,22 +32,16 @@
         </label>
     
         <button onclick=submitForm()>Submit</button>
+    <br>
 
+    <canvas id="myCanvas" width="1200" height="500"></canvas>
+
+    <br>
     <button id="close-button" onclick=stopFile()>Stop</button>
     <button id="pause-button" onclick=pauseFile()>Pause</button>
     <button id="restart-button" onclick=restartFile()>Restart</button>
     <button id="delete-button" onclick=deleteBlock()>Simulate Strum</button>
-    <button id="listen-button" onclick="toggleListening()">Not Listening</button>
-    <!-- <button id="deleteButton">delete Block</button> -->
-    <canvas id="myCanvas" width="1200" height="500"></canvas>
-
-
-
-
-
-
-
-
+    <button id="listen-button" onclick="toggleListening()">Toggle Listening</button>
 
 
 
@@ -78,9 +72,6 @@
 			},
 			portamento: 0.05
 		}).toDestination();
-        const timeDelay =  (String1Position - startPosition) * interval / 1000 // how long it takes from spawning to actually playing, 
-                                                              // idea is that block starts at start positions, moves once every interval milliseconds, 
-                                                              // until it reaches string1position, so it will take ((string1position - startposition) * interval) / 1000
 
         const pixels_per_second = update_speed / (interval / 1000)
 
@@ -90,9 +81,10 @@
         var pause = false;
         var listening = false
         var intervalId
-        var mode = training
+        var mode = "training"
         var playSpeed = 1
         var currentTrack = ""
+        var first_note_target = 0
 
 
         function toggleListening() {
@@ -153,9 +145,14 @@
                     color = 'yellow';
                     break;
             }
+
             targetPosition = String1Position - (StringGap * stringNumber) 
+            if (first_note_target == 0) {
+                yCoordinate = -1 * time_played * pixels_per_second - (StringGap * stringNumber)
+                first_note_target = targetPosition - yCoordinate
+            }
             xCoordinate = Fret1Position + FretGap * fret
-            yCoordinate = startPosition - time_played * pixels_per_second - (StringGap * stringNumber) 
+            yCoordinate = -1 * time_played * pixels_per_second - (StringGap * stringNumber) + first_note_target
 
             rect = {
                 x: xCoordinate,
@@ -250,16 +247,12 @@
         function submitForm() {
 
             speed = $('#speed').val();
-            var track = $('#options').val();
+            currentTrack = $('#options').val();
             mode = $('input[name="mode"]:checked').val();
 
             playSpeed = speed / 5
 
-
-
-            console.log(speed + " " + track + " " + mode)
-
-            fetch('/getActiveFile?speed=' + 5 + "&track=" + track)
+            fetch('/getActiveFile?speed=' + 5 + "&track=" + currentTrack)
                 .then(response => response.json())
                 .then(data => {
                     // Handle the response data

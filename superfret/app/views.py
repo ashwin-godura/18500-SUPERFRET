@@ -121,10 +121,22 @@ def getActiveFile(request):
    track = str(request.GET.get('track', ""))
 
    active = findactivefile()
+
+   if active is None:
+      return redirect(reverse('home'))
+
+   current_directory = os.getcwd()
+
+   # Get the parent directory
+   parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+   file_path = current_directory + "/" + str(active.file)
+
+   notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, track)
+   notes_for_teensy = app.MidiFileReader.process_midi_for_teensy(file_path, track, speed)
+
    u.restart_song()
-   u.start_song(str(active.file))
-   notes =  app.MidiFileReader.extract_notes_from_midi(active.file, speed, track)
+   u.start_song(notes_for_teensy)
    data = {
-      'notes': notes,
+      'notes': notes_for_webapp,
    }
    return JsonResponse(data)
