@@ -11,7 +11,7 @@
 // extern Musical_note_TO_LED_idx[128][2];
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIN 6  // On Trinket or Gemma, suggest changing this to 1
+#define PIN 2  // On Trinket or Gemma, suggest changing this to 1
 
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS 16  // Popular NeoPixel ring size
@@ -38,9 +38,9 @@ double uS_per_tick;
 StateMachine fsm;
 int NOTE_IDX = 0;
 
-#define pickPin 2
+#define pickPin 12
 
-#define fretClockPin 3
+#define fretClockPin 11
 #define fretSimulusPin 4
 
 #define E_stringPin 24
