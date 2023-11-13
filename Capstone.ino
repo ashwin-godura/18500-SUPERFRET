@@ -59,15 +59,13 @@ int NOTE_IDX = 0;
 #define UNUSED_INTERRUPT_9 38
 #define UNUSED_INTERRUPT_10 37
 
+#define BUZZER_PIN 28
+#define BUZZER_VOLUME 100  //[50-255]
+
 void handleFileInterrupt() {
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false,
              false);
 }
-
-// void handleStrumInterrupt() {
-//   fsm.update(false, digitalRead(strumInterruptPin), false, false, false);
-//   timeOfLastStrum = micros();
-// }
 
 void handlePauseInterrupt() {
   fsm.update(false, false, false, digitalRead(pauseInterruptPin), false);
@@ -76,8 +74,6 @@ void handlePauseInterrupt() {
 void handleRestartInterrupt() {
   fsm.update(false, false, false, false, digitalRead(restartInterruptPin));
 }
-
-
 
 void printState() {
   switch (fsm.getState()) {
@@ -222,7 +218,7 @@ void sampleFrets() {
         notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string,
         notePlayedOn_G_string, fret);
     } else {
-      Serial.println(notePlayed, HEX);
+      // Serial.println(notePlayed, HEX);
     }
     digitalWrite(fretClockPin, LOW);
     delayMicroseconds(DIGITAL_DELAY);
@@ -301,8 +297,8 @@ void setup() {
   pinMode(D_stringPin, INPUT);
   pinMode(G_stringPin, INPUT);
 
-  // declaring unused interrupt pins as input becuase 
-  // they are connected to the PI so we don't accidentally 
+  // declaring unused interrupt pins as input becuase
+  // they are connected to the PI so we don't accidentally
   // backdrive the PI
   pinMode(UNUSED_INTERRUPT_4, INPUT);
   pinMode(UNUSED_INTERRUPT_5, INPUT);
@@ -330,11 +326,33 @@ void setup() {
 
   analogReadResolution(8);
 
+  pinMode(BUZZER_PIN, OUTPUT);
+  analogWriteFrequency(BUZZER_PIN, 100'000);
+
+
+
   assert(fsm.getState() == WAIT_TO_START);
   mode == TRAINING;
 }
 
+unsigned long nextBuzzerTime = 0;
+bool buzzer_state = false;
+unsigned long buzzerONtime = 100'000;   // [us]
+unsigned long buzzerOFFtime = 500'000;  // [us]
 void loop() {
+  while (1) {
+    if (nextBuzzerTime <= micros()) {
+      if (buzzer_state) {
+        analogWrite(BUZZER_PIN, BUZZER_VOLUME);
+        nextBuzzerTime += buzzerONtime;
+      } else {
+        analogWrite(BUZZER_PIN, 0);
+        nextBuzzerTime += buzzerOFFtime;
+      }
+      buzzer_state = !buzzer_state;
+    }
+  }
+
   // TODO check if pi wants the system to be in TRAINING or CONTINUOUS mode
 
   /*
@@ -456,8 +474,12 @@ void loop() {
         sampleFrets();
         samplePick();
 
-        Serial.println(notePlayed, HEX);
-        Serial.println(expected_note.note, HEX);
+
+        if (notePlayed) {
+          Serial.print(notePlayed, HEX);
+          Serial.print("\t");
+          Serial.println(expected_note.note, HEX);
+        }
 
         if (strum and notePlayed == expected_note.note) {  // move onto the next note
           Serial.print("Turning LED ");

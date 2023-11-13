@@ -25,14 +25,18 @@ void StateMachine::update(bool file_transmission, bool strum, bool done, bool pa
       }
     case WAIT_FOR_STRUM:
       {
-        if (strum) {
+        if (restart) {
+          nextState = WAIT_TO_START;
+        } else if (strum) {
           nextState = USER_EXPERIENCE;
         }
         break;
       }
     case USER_EXPERIENCE:
       {
-        if (done) {
+        if (restart) {
+          nextState = WAIT_TO_START;
+        } else if (done) {
           nextState = WAIT_TO_START;
         } else {
           if (pause) {
