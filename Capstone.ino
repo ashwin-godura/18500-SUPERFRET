@@ -230,11 +230,11 @@ void loop() {
           Serial.print("Turning LED ");
           Serial.print(LED_idx);
           Serial.print(" ON (note ");
-          Serial.print(expected_note.note);
+          Serial.print(expected_note.note, HEX);
           Serial.print(" index ");
           Serial.print(NOTE_IDX);
           Serial.println(")");
-          pixels.setPixelColor(LED_idx, pixels.Color(0, 255, 0));
+          pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(expected_note.note));
         }
 
         sampleFrets();

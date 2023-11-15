@@ -14,5 +14,5 @@ void convertNoteToFretCoordinates(uint8_t note, STRING &string, uint8_t &fret);
 
 extern Adafruit_NeoPixel pixels;
 uint32_t convertFretCoordinatesToCOLOR(STRING string, uint8_t fret);
-
+uint32_t convert_Note_To_COLOR(uint8_t note);
 #endif // _CAPSTONE_NOTES_

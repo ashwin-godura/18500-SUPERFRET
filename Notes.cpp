@@ -1,4 +1,5 @@
 #include "Notes.h"
+#include "Arduino.h"
 #include "Constants.h"
 #include <Adafruit_NeoPixel.h>
 #include <cstdint>
@@ -8,7 +9,7 @@ uint8_t get_LEDidx_from_note(uint8_t note) {
   return note % NUMPIXELS;
 }
 
-uint8_t NoteArray[15][4] = {
+uint8_t NoteArray[NUM_FRETS][4] = {
     //       E            A             D           G
     0x43, 0x42, 0x41, 0x40, // Fret 0 (open string)
     0x47, 0x46, 0x45, 0x44, // Fret 1
@@ -27,6 +28,18 @@ uint8_t NoteArray[15][4] = {
     0x00, 0x00, 0x00, 0x00  // Fret 14
 };
 
+STRING convert_string_idx_to_STRING(uint8_t string_idx) {
+  if (string_idx == 0) {
+    return E;
+  } else if (string_idx == 1) {
+    return A;
+  } else if (string_idx == 2) {
+    return D;
+  } else if (string_idx == 3) {
+    return G;
+  }
+}
+
 uint8_t convert_STRING_to_string_idx(STRING string) {
   if (string == E) {
     return 0;
@@ -41,6 +54,26 @@ uint8_t convert_STRING_to_string_idx(STRING string) {
 }
 
 void convertNoteToFretCoordinates(uint8_t note, STRING &string, uint8_t &fret) {
+  Serial.print("convertNoteToFretCoordinates Expected Note:");
+  Serial.println(note, HEX);
+  for (int fret_idx = 0; fret_idx < NUM_FRETS; fret_idx++) {
+    for (int string_idx = 0; string_idx < 4; string_idx++) {
+      if (NoteArray[fret_idx][string_idx] == note) {
+        Serial.print("fret_idx:");
+        Serial.print(fret_idx);
+        Serial.print("\tstring:");
+        Serial.print(convert_STRING_to_string_idx(string));
+        Serial.print("\tnote:");
+        Serial.print(note, HEX);
+        Serial.print("\tNoteArray[fret_idx][string]:");
+        Serial.println(NoteArray[fret_idx][string], HEX);
+
+        string = convert_string_idx_to_STRING(string_idx);
+        fret = fret_idx;
+        return;
+      }
+    }
+  }
 }
 
 uint8_t convertFretCoordinatesToNote(STRING string, uint8_t fret) {
@@ -52,14 +85,24 @@ uint8_t convertFretCoordinatesToNote(STRING string, uint8_t fret) {
 }
 
 uint32_t convertFretCoordinatesToCOLOR(STRING string, uint8_t fret) {
+  Serial.print("String:");
+  Serial.println(string);
   if (string == E) {
-    return pixels.Color(0, 255, 0);
+    return pixels.Color(255, 0, 0);
   } else if (string == A) {
     return pixels.Color(0, 255, 0);
   } else if (string == D) {
-    return pixels.Color(0, 255, 0);
+    return pixels.Color(0, 0, 255);
   } else if (string == G) {
-    return pixels.Color(0, 255, 0);
+    return pixels.Color(255, 255, 255);
   } else
-    return pixels.Color(0, 255, 0);
+    return pixels.Color(0, 0, 0);
+}
+
+uint32_t convert_Note_To_COLOR(uint8_t note) {
+  STRING string;
+  uint8_t fret;
+  convertNoteToFretCoordinates(note, string, fret);
+
+  return convertFretCoordinatesToCOLOR(string, fret);
 }
