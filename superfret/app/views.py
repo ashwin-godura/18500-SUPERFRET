@@ -7,6 +7,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.http import JsonResponse
+from django.core.files.storage import FileSystemStorage
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -45,6 +46,16 @@ def addFile(request):
    # print(str(form))
    if not form.is_valid():
       return redirect(reverse('home'))
+
+   # # Get the uploaded file
+   # uploaded_file = request.FILES['file']
+
+   # # Set the file path within the static/images folder
+   # file_path = f'static/images/{uploaded_file.name}'
+
+   # # Save the file to the specified path
+   # fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+   # fs.save(file_path, uploaded_file)
 
    file = MidiFile()
    file.name = form.cleaned_data['name']
@@ -125,11 +136,7 @@ def getActiveFile(request):
    if active is None:
       return redirect(reverse('home'))
 
-   current_directory = os.getcwd()
-
-   # Get the parent directory
-   parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
-   file_path = current_directory + "/" + str(active.file)
+   file_path = active.file
 
    notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, track)
    notes_for_teensy = app.MidiFileReader.process_midi_for_teensy(file_path, track, speed)

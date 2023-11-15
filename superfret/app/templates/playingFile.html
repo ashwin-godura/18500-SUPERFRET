@@ -85,6 +85,7 @@
         var playSpeed = 1
         var currentTrack = ""
         var first_note_target = 0
+        var waiting_for_strum = false
 
 
         function toggleListening() {
@@ -175,6 +176,7 @@
             }
             var rect = rectangles[0]
             rectangles.splice(0, 1);
+            waiting_for_strum = false
             playMidiSound(rect.noteValue)
             pause = false
             // i--; // Adjust the index for the next iteration
@@ -184,7 +186,13 @@
             clearInterval(intervalId)
             rectangles = []
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // draw the initial image
+            const image = new Image();
+            image.src = 'https://bassplayercenter.com/wp-content/uploads/2019/10/All-notes-on-bass-horiz.png';
+            ctx.drawImage(image, 0, 200);
+
             pause = false
+            waiting_for_strum = true
             // pause = true
             for (var i = 0; i < notes.length; i++) {
                 note = notes[i]
@@ -194,9 +202,12 @@
         }
 
         function animate() {
+            console.log("waiting for strum = ", waiting_for_strum)
 
             // draw all the blocks
-            if (pause == true) return
+            if (pause == true) {
+                return
+            }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const image = new Image();
             
@@ -216,9 +227,11 @@
                     ctx.strokeRect(rect.x, rect.targetPosition, 30, 30);
                 }
                 ctx.fillRect(rect.x, rect.y, 30, 30);
+                ctx.strokeStyle = 'black';
+                ctx.strokeRect(rect.x, rect.y, 30, 30);
 
                 if (rect.y >= rect.targetPosition) {
-                    if (mode == "performance") {
+                    if (mode == "performance" && !waiting_for_strum) {
                         deleteBlock()
                     } else {
                         pause = true

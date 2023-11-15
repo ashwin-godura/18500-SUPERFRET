@@ -28,6 +28,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['0.0.0.0', '172.26.161.183', '127.0.0.1', '128.2.149.254', "a2superfret.wifi.local.cmu.edu"]
 
+MEDIA_URL = '/app/static/images/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'app/static/images')
+
 
 # Application definition
 
