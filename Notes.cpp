@@ -81,7 +81,7 @@ uint32_t convertFretCoordinatesToCOLOR(STRING string, uint8_t fret) {
   } else if (string == D) {
     return pixels.Color(0, 255, 0); // GREEN
   } else if (string == G) {
-    return pixels.Color(255, 255, 0); // YELLOW
+    return pixels.Color(255, 100, 0); // YELLOW
   } else
     return pixels.Color(0, 0, 0);
 }
