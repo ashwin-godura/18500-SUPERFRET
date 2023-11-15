@@ -1,3 +1,5 @@
+#ifndef _CAPSTONE_STATE_MACHINE_
+#define _CAPSTONE_STATE_MACHINE_
 enum STATE {
   WAIT_TO_START,
   RECEIVING_SONG,
@@ -27,3 +29,4 @@ public:
 private:
   STATE prevState_, state_;
 };
+#endif // _CAPSTONE_STATE_MACHINE_
