@@ -18,15 +18,14 @@
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-#define DELAYVAL 50  // Time (in milliseconds) to pause between pixels
-
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial2
 
 #define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)  // [us]
-#define MIN_TIME_BETWEEN_STRUMS (0.01e6)        // [us]
+#define MIN_TIME_BETWEEN_STRUMS (0.2e6)         // [us]
 #define NUM_FRETS 15
-#define DIGITAL_DELAY 5  // [us]
+#define DIGITAL_DELAY 5     // [us]
+#define LED_OFF_TIME 0.3e6  // [us]
 
 enum USER_MODE { TRAINING,
                  CONTINUOUS };
@@ -60,7 +59,7 @@ int NOTE_IDX = 0;
 #define UNUSED_INTERRUPT_10 37
 
 #define BUZZER_PIN 28
-#define BUZZER_VOLUME 0 //[50-255]
+#define BUZZER_VOLUME 0  //[50-255]
 
 void handleFileInterrupt() {
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false,
@@ -328,7 +327,7 @@ void setup() {
 
   pinMode(BUZZER_PIN, OUTPUT);
   analogWriteFrequency(BUZZER_PIN, 100'000);
-  
+
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
@@ -341,18 +340,18 @@ bool buzzer_state = false;
 unsigned long buzzerONtime = 100'000;   // [us]
 unsigned long buzzerOFFtime = 500'000;  // [us]
 void loop() {
-  while (1) {
-    if (nextBuzzerTime <= micros()) {
-      if (buzzer_state) {
-        analogWrite(BUZZER_PIN, BUZZER_VOLUME);
-        nextBuzzerTime += buzzerONtime;
-      } else {
-        analogWrite(BUZZER_PIN, 0);
-        nextBuzzerTime += buzzerOFFtime;
-      }
-      buzzer_state = !buzzer_state;
-    }
-  }
+  //   while (1) {
+  //     if (nextBuzzerTime <= micros()) {
+  //       if (buzzer_state) {
+  //         analogWrite(BUZZER_PIN, BUZZER_VOLUME);
+  //         nextBuzzerTime += buzzerONtime;
+  //       } else {
+  //         analogWrite(BUZZER_PIN, 0);
+  //         nextBuzzerTime += buzzerOFFtime;
+  //       }
+  //       buzzer_state = !buzzer_state;
+  //     }
+  //   }
 
   // TODO check if pi wants the system to be in TRAINING or CONTINUOUS mode
 
@@ -412,7 +411,6 @@ void loop() {
     //   bytePosition++;
     // }
     // }
-    NOTE_IDX = 0;
   }
 
   while (fsm.getState() == WAIT_FOR_STRUM) {
@@ -434,10 +432,12 @@ void loop() {
       samplePick();
       delay(10);
     }
+    NOTE_IDX = 0;
   }
 
   unsigned long long nextFretboardSampleTime = 0;
   bool first_time_in_user_experience = true;
+  unsigned long long time_last_LED_was_turned_off = 0;
   while (fsm.getState() == USER_EXPERIENCE) {
     if (first_time_in_user_experience) {
       Serial.println("USER_EXPERIENCE");
@@ -445,6 +445,7 @@ void loop() {
       pixels.show();   // Send the updated pixel colors to the hardware.
       nextFretboardSampleTime = micros();
       first_time_in_user_experience = false;
+      time_last_LED_was_turned_off = 0;
     }
 
     NOTE_t expected_note;
@@ -463,11 +464,14 @@ void loop() {
         assert(expected_note.note != 0x0);
 
         bool LED_already_ON = pixels.getPixelColor(LED_idx);
-        if (not LED_already_ON) {
+        bool move_onto_next_note = (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
+        if (not LED_already_ON and move_onto_next_note) {
           Serial.print("Turning LED ");
           Serial.print(LED_idx);
           Serial.print(" ON (note ");
           Serial.print(expected_note.note);
+          Serial.print(" index ");
+          Serial.print(NOTE_IDX);
           Serial.println(")");
           pixels.setPixelColor(LED_idx, pixels.Color(0, 255, 0));
         }
@@ -475,8 +479,9 @@ void loop() {
         sampleFrets();
         samplePick();
 
-
-        if (notePlayed) {
+        if (strum and notePlayed) {
+          Serial.print(NOTE_IDX, DEC);
+          Serial.print("\t");
           Serial.print(notePlayed, HEX);
           Serial.print("\t");
           Serial.println(expected_note.note, HEX);
@@ -487,8 +492,11 @@ void loop() {
           Serial.print(LED_idx);
           Serial.print(" OFF (note ");
           Serial.print(expected_note.note);
+          Serial.print(" index ");
+          Serial.print(NOTE_IDX);
           Serial.println(")");
           pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
+          time_last_LED_was_turned_off = micros();
           NOTE_IDX++;
         }
         pixels.show();  // Send the updated pixel colors to the hardware.
