@@ -221,8 +221,6 @@ void loop() {
           LED_idx = get_LEDidx_from_note(expected_note.note);
         }
 
-        assert(expected_note.note != 0x0);
-
         bool LED_already_ON = pixels.getPixelColor(LED_idx);
         bool move_onto_next_note =
           (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
