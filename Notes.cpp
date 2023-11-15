@@ -20,9 +20,9 @@ uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
     } else if (fret == 2) {
       return 0x4B;
     } else if (fret == 3) {
-      return 0x00;
+      return 0x01;
     } else if (fret == 4) {
-      return 0x00;
+      return 0x02;
     }
   } else if (notePlayedOn_A_string) {
     // Serial.print("Detected press on A string, fret ");
@@ -36,7 +36,7 @@ uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
     } else if (fret == 3) {
       return 0x3E;
     } else if (fret == 4) {
-      return 0x00;
+      return 0x03;
     }
   } else if (notePlayedOn_D_string) {
     // Serial.print("Detected press on D string, fret ");
@@ -50,7 +50,7 @@ uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
     } else if (fret == 3) {
       return 0x3D;
     } else if (fret == 4) {
-      return 0x00;
+      return 0x04;
     }
   } else if (notePlayedOn_G_string) {
     // Serial.print("Detected press on G string, fret ");
@@ -64,7 +64,7 @@ uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
     } else if (fret == 3) {
       return 0x3C; // verified
     } else if (fret == 4) {
-      return 0x00;
+      return 0x05;
     }
   } else {
     return 0x0;
