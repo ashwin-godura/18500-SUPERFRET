@@ -29,4 +29,5 @@ urlpatterns = [
     path('restartfile', views.restartfile, name='restartfile'),
     path('playingFile', views.playingFile, name='playingFile'),
     path('getActiveFile', views.getActiveFile, name='getActiveFile'),
+    path('shutDownNow', views.shutDownNow, name='shutDownNow'),
 ]

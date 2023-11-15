@@ -41,6 +41,7 @@
     </main>
 
     <button id="addFileButton" onclick="openAddForm()">Add a file</button>
+    <button id="shutDownButton" onclick="shutDownNow()">Shut it down now!</button>
 
     <!-- Modal for adding MIDI file -->
     <div id="addFormModal" class="modal">
@@ -90,6 +91,10 @@
             window.location.href = '/stopfile'
             var popupWindow = document.getElementById("popup-window");
             popupWindow.style.display = 'none';
+        }
+        
+        function shutDownNow() {
+            window.location.href = '/shutDownNow'
         }
     </script>
 

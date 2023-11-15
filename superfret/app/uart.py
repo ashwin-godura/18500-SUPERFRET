@@ -7,7 +7,7 @@ RUNNING_ON_PI = False
 class Uart:
     def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27, restart_pin=22):
         # Initialize UART
-        self.uart = serial.Serial(uart_port, 9600, timeout=1)
+        self.uart = serial.Serial(uart_port, 115200, timeout=1)
 
         # Initialize GPIO
         self.start_pin = start_pin
@@ -35,9 +35,13 @@ class Uart:
         try:
             # Trigger dedicated GPIO interrupt for start_song
             self.set_gpio_high(self.start_pin)
+            time.sleep(0.1)
 
             # Perform UART communication (send file, for example)
-            self.uart.write(bytes(file))
+            print("len=" + str(len(file)))
+            hex_string = ' '.join([hex(byte) for byte in file])
+            print(hex_string)
+            self.uart.write(file)
 
             time.sleep(0.5)  # Briefly set GPIO pin high
             self.set_gpio_low(self.start_pin)

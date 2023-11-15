@@ -118,8 +118,8 @@ def playingFile(request):
    if active is None:
       return redirect(reverse('home'))
    
-   tracks = app.MidiFileReader.get_midi_tracks(active.file)
-   print(tracks)
+   tracks = app.MidiFileReader.get_midi_tracks("app/static/images/" + str(active.file))
+   # print(tracks)
    context = {
       "file": active,
       "tracks": tracks
@@ -135,11 +135,11 @@ def getActiveFile(request):
    if active is None:
       return redirect(reverse('home'))
 
-   file_path = active.file
+   file_path = "app/static/images/" + str(active.file)
 
 
-   notes_for_teensy = app.MidiFileReader.process_midi_for_teensy(file_path, speed, track)
    notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, track) 
+   notes_for_teensy = app.MidiFileReader.process_midi_for_teensy(file_path, speed, track)
 
    u.restart_song()
    u.start_song(notes_for_teensy)
@@ -147,3 +147,11 @@ def getActiveFile(request):
       'notes': notes_for_webapp,
    }
    return JsonResponse(data)
+
+
+def shutDownNow(request):
+   # Define the command to be executed
+   command = "shutdown now"
+
+   # Use subprocess.run with sudo and shell=True
+   os.system(command)

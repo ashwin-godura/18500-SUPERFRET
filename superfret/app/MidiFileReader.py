@@ -25,11 +25,12 @@ def extract_notes_from_track(track, speed):
     return notes
 
 def extract_notes_from_midi(midi_file_path, speed, track):
-    midi_data = pretty_midi.PrettyMIDI(midi_file_path)
+    with open(str(midi_file_path), 'rb') as file:
+            midi_data = pretty_midi.PrettyMIDI(file)
 
     target_track = None
     for idx, instrument in enumerate(midi_data.instruments):
-        print("requested track: " +track+ " actual track: " + instrument.name)
+        # print("requested track: " +track+ " actual track: " + instrument.name)
         if track in instrument.name:
             target_track = midi_data.instruments[idx]
             break
@@ -74,11 +75,11 @@ def get_midi_tracks(filepath):
     try:
 
         # Use pretty_midi to parse the MIDI file
-        pretty_midi_obj = pretty_midi.PrettyMIDI(filepath)
+        with open(str(filepath), 'rb') as file:
+            pretty_midi_obj = pretty_midi.PrettyMIDI(file)
 
         # Extract information about tracks
         tracks_info = []
-        print("starting loop")
         for i, instrument in enumerate(pretty_midi_obj.instruments):
             print(instrument.name)
             tracks_info.append(instrument.name)
@@ -98,47 +99,38 @@ def get_track_by_name(midi_data, track_name):
     
 def process_midi_for_teensy(midi_file_path, speed_factor, selected_track):
     try:
-        print("0\n" + str(midi_file_path) + "\n\n\n\n")
         # Load the MIDI file using pretty_midi
-        midi_data = pretty_midi.PrettyMIDI(midi_file_path)
-        print("1\n")
+        with open(str(midi_file_path), 'rb') as file:
+            midi_data = pretty_midi.PrettyMIDI(file)
         
-         # Adjust the tempo by the speed factor
-        # midi_data.adjust_tempo(speed_factor)
-        print("3\n")
+        # Adjust the tempo by the speed factor
+        #  midi_data.adjust_times(speed_factor)
 
         # Select the specified track
         selected_instrument = get_track_by_name(midi_data, selected_track)
         if selected_instrument is None:
             selected_instrument = midi_data.instruments[-1]
 
-        print("2\n")
-
         # Create a new PrettyMIDI object with only the selected track
         new_midi_data = pretty_midi.PrettyMIDI()
         new_midi_data.instruments.append(selected_instrument)
-        print("4\n")
+        
+        prevfret = 0
+        prevstring = 1
+        for note in selected_instrument.notes:
+            # Modify the pitch attribute (replace 60 with the desired new pitch value)
+            prevfret, prevstring = midi_to_bass_fret_string(note, prevfret, prevstring)
+            # print("prevfret {} prevstring {} makes {}".format(prevfret, prevstring, ((prevstring << 4) + prevfret)))
+            note.pitch = (prevstring << 4) + prevfret
 
         # Convert the PrettyMIDI object to bytes
         midi_bytes_buffer = io.BytesIO()
         new_midi_data.write(midi_bytes_buffer)
         midi_bytes = midi_bytes_buffer.getvalue()
+        midi_bytes_buffer.close()
         
-        print("5\n")
-
         return midi_bytes
 
     except Exception as e:
         print(f"Error: {e}")
         return None
-
-def main():
-    midi_file_path = "static/Twinkle Twinkle Little Star.mid"  # Replace with the path to your MIDI file
-    notes = extract_notes_from_midi(midi_file_path)
-    
-    print("Notes extracted:")
-    for note in notes:
-        print(f"Note: {note['note_value']}, Start Time: {note['start_time']} seconds")
-
-if __name__ == "__main__":
-    main()
