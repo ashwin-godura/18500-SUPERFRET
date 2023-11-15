@@ -1,3 +1,4 @@
+import io
 import math
 import sys
 import mido
@@ -89,23 +90,41 @@ def get_midi_tracks(filepath):
         print(f"Error: {e}")
         return None
     
-def process_midi_for_teensy(midi_file_path, selected_track, speed_factor):
+def get_track_by_name(midi_data, track_name):
+    for instrument in midi_data.instruments:
+        if instrument.name == track_name:
+            return instrument
+    return None
+    
+def process_midi_for_teensy(midi_file_path, speed_factor, selected_track):
     try:
+        print("0\n" + str(midi_file_path) + "\n\n\n\n")
         # Load the MIDI file using pretty_midi
         midi_data = pretty_midi.PrettyMIDI(midi_file_path)
+        print("1\n")
+        
+         # Adjust the tempo by the speed factor
+        # midi_data.adjust_tempo(speed_factor)
+        print("3\n")
 
         # Select the specified track
-        selected_instrument = midi_data.instruments[selected_track]
+        selected_instrument = get_track_by_name(midi_data, selected_track)
+        if selected_instrument is None:
+            selected_instrument = midi_data.instruments[-1]
 
-        # Adjust the tempo by the speed factor
-        midi_data.adjust_tempo(speed_factor)
+        print("2\n")
 
         # Create a new PrettyMIDI object with only the selected track
         new_midi_data = pretty_midi.PrettyMIDI()
         new_midi_data.instruments.append(selected_instrument)
+        print("4\n")
 
         # Convert the PrettyMIDI object to bytes
-        midi_bytes = new_midi_data.write()
+        midi_bytes_buffer = io.BytesIO()
+        new_midi_data.write(midi_bytes_buffer)
+        midi_bytes = midi_bytes_buffer.getvalue()
+        
+        print("5\n")
 
         return midi_bytes
 

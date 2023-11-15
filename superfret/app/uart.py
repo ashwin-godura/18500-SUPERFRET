@@ -32,7 +32,6 @@ class Uart:
         GPIO.output(pin, GPIO.LOW)
 
     def start_song(self, file):
-        print("sending file")
         try:
             # Trigger dedicated GPIO interrupt for start_song
             self.set_gpio_high(self.start_pin)
@@ -49,6 +48,23 @@ class Uart:
 
         print("file sent")
         return
+    
+    def read_feedback(self):
+        try:
+            # Wait until data is available on UART
+            while not self.uart.in_waiting:
+                pass  # Block until data is available
+
+            # Read the data byte by byte
+            fret = int.from_bytes(self.uart.read(1), byteorder='big')
+            string = int.from_bytes(self.uart.read(1), byteorder='big')
+            correct = int.from_bytes(self.uart.read(1), byteorder='big')
+
+            return fret, string, correct
+
+        except Exception as e:
+            print(f"Error in read_packet: {e}")
+            return None
 
     def pause_song(self):
         try:

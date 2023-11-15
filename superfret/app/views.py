@@ -7,7 +7,6 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.http import JsonResponse
-from django.core.files.storage import FileSystemStorage
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -138,8 +137,9 @@ def getActiveFile(request):
 
    file_path = active.file
 
-   notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, track)
-   notes_for_teensy = app.MidiFileReader.process_midi_for_teensy(file_path, track, speed)
+
+   notes_for_teensy = app.MidiFileReader.process_midi_for_teensy(file_path, speed, track)
+   notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, track) 
 
    u.restart_song()
    u.start_song(notes_for_teensy)
