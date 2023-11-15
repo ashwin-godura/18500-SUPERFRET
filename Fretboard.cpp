@@ -37,15 +37,27 @@ void sampleFrets() {
   // Serial.println("Loaded");
   notePlayed = 0;
   for (int fret = 0; fret < NUM_FRETS; fret++) {
-    bool notePlayedOn_E_string = digitalRead(E_stringPin);
-    bool notePlayedOn_A_string = digitalRead(A_stringPin);
-    bool notePlayedOn_D_string = digitalRead(D_stringPin);
-    bool notePlayedOn_G_string = digitalRead(G_stringPin);
+    STRING string = None;
+    if (digitalRead(E_stringPin)) {
+      string = E;
+    }
+    if (digitalRead(A_stringPin)) {
+      string = A;
+    }
+    if (digitalRead(D_stringPin)) {
+      string = D;
+    }
+    if (digitalRead(G_stringPin)) {
+      string = G;
+    }
     if (not notePlayed) { // if already sensed a note, don't read again and
-                          // potentially overwrite it.
-      notePlayed = convertFretCoordinatesToNote(
-          notePlayedOn_E_string, notePlayedOn_A_string, notePlayedOn_D_string,
-          notePlayedOn_G_string, fret);
+      // potentially overwrite it.
+      notePlayed = convertFretCoordinatesToNote(string, fret);
+    //   Serial.print(convert_STRING_to_string_idx(string));
+    //   Serial.print("\t");
+    //   Serial.print(fret);
+    //   Serial.print("\t");
+    //   Serial.println(notePlayed, HEX);
     } else {
       // Serial.println(notePlayed, HEX);
     }

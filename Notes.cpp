@@ -1,72 +1,65 @@
+#include "Notes.h"
 #include "Constants.h"
-#include <stdint.h>
+#include <Adafruit_NeoPixel.h>
+#include <cstdint>
 
 uint8_t get_LEDidx_from_note(uint8_t note) {
   // TODO index into a look-up table
   return note % NUMPIXELS;
 }
 
-uint8_t convertFretCoordinatesToNote(bool notePlayedOn_E_string,
-                                     bool notePlayedOn_A_string,
-                                     bool notePlayedOn_D_string,
-                                     bool notePlayedOn_G_string, uint8_t fret) {
-  if (notePlayedOn_E_string) {
-    // Serial.print("Detected press on E string, fret ");
-    // Serial.println(fret);
-    if (fret == 0) {
-      return 0x43; // verified
-    } else if (fret == 1) {
-      return 0x47;
-    } else if (fret == 2) {
-      return 0x4B;
-    } else if (fret == 3) {
-      return 0x01;
-    } else if (fret == 4) {
-      return 0x02;
-    }
-  } else if (notePlayedOn_A_string) {
-    // Serial.print("Detected press on A string, fret ");
-    // Serial.println(fret);
-    if (fret == 0) {
-      return 0x42;
-    } else if (fret == 1) {
-      return 0x46;
-    } else if (fret == 2) {
-      return 0x4A;
-    } else if (fret == 3) {
-      return 0x3E;
-    } else if (fret == 4) {
-      return 0x03;
-    }
-  } else if (notePlayedOn_D_string) {
-    // Serial.print("Detected press on D string, fret ");
-    // Serial.println(fret);
-    if (fret == 0) {
-      return 0x41; // verified
-    } else if (fret == 1) {
-      return 0x45;
-    } else if (fret == 2) {
-      return 0x49;
-    } else if (fret == 3) {
-      return 0x3D;
-    } else if (fret == 4) {
-      return 0x04;
-    }
-  } else if (notePlayedOn_G_string) {
-    // Serial.print("Detected press on G string, fret ");
-    // Serial.println(fret);
-    if (fret == 0) {
-      return 0x40;
-    } else if (fret == 1) {
-      return 0x44;
-    } else if (fret == 2) {
-      return 0x48;
-    } else if (fret == 3) {
-      return 0x3C; // verified
-    } else if (fret == 4) {
-      return 0x05;
-    }
-  } else {
-    return 0x0;
+uint8_t NoteArray[15][4] = {
+    //       E            A             D           G
+    0x43, 0x42, 0x41, 0x40, // Fret 0 (open string)
+    0x47, 0x46, 0x45, 0x44, // Fret 1
+    0x4B, 0x4A, 0x49, 0x48, // Fret 2
+    0x00, 0x3E, 0x3D, 0x3C, // Fret 3
+    0x00, 0x00, 0x00, 0x05, // Fret 4
+    0x00, 0x00, 0x00, 0x00, // Fret 5
+    0x00, 0x00, 0x00, 0x00, // Fret 6
+    0x00, 0x00, 0x00, 0x00, // Fret 7
+    0x00, 0x00, 0x00, 0x00, // Fret 8
+    0x00, 0x00, 0x00, 0x00, // Fret 9
+    0x00, 0x00, 0x00, 0x00, // Fret 10
+    0x00, 0x00, 0x00, 0x00, // Fret 11
+    0x00, 0x00, 0x00, 0x00, // Fret 12
+    0x00, 0x00, 0x00, 0x00, // Fret 13
+    0x00, 0x00, 0x00, 0x00  // Fret 14
+};
+
+uint8_t convert_STRING_to_string_idx(STRING string) {
+  if (string == E) {
+    return 0;
+  } else if (string == A) {
+    return 1;
+  } else if (string == D) {
+    return 2;
+  } else if (string == G) {
+    return 3;
+  } else
+    return 0;
+}
+
+void convertNoteToFretCoordinates(uint8_t note, STRING &string, uint8_t &fret) {
+}
+
+uint8_t convertFretCoordinatesToNote(STRING string, uint8_t fret) {
+  if (string == None) {
+    return 0x00;
   }
+  uint8_t string_idx = convert_STRING_to_string_idx(string);
+  return NoteArray[fret][string_idx];
+}
+
+uint32_t convertFretCoordinatesToCOLOR(STRING string, uint8_t fret) {
+  if (string == E) {
+    return pixels.Color(0, 255, 0);
+  } else if (string == A) {
+    return pixels.Color(0, 255, 0);
+  } else if (string == D) {
+    return pixels.Color(0, 255, 0);
+  } else if (string == G) {
+    return pixels.Color(0, 255, 0);
+  } else
+    return pixels.Color(0, 255, 0);
 }
