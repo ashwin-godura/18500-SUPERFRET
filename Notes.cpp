@@ -54,20 +54,9 @@ uint8_t convert_STRING_to_string_idx(STRING string) {
 }
 
 void convertNoteToFretCoordinates(uint8_t note, STRING &string, uint8_t &fret) {
-  Serial.print("convertNoteToFretCoordinates Expected Note:");
-  Serial.println(note, HEX);
   for (int fret_idx = 0; fret_idx < NUM_FRETS; fret_idx++) {
     for (int string_idx = 0; string_idx < 4; string_idx++) {
       if (NoteArray[fret_idx][string_idx] == note) {
-        Serial.print("fret_idx:");
-        Serial.print(fret_idx);
-        Serial.print("\tstring:");
-        Serial.print(convert_STRING_to_string_idx(string));
-        Serial.print("\tnote:");
-        Serial.print(note, HEX);
-        Serial.print("\tNoteArray[fret_idx][string]:");
-        Serial.println(NoteArray[fret_idx][string], HEX);
-
         string = convert_string_idx_to_STRING(string_idx);
         fret = fret_idx;
         return;
@@ -85,16 +74,14 @@ uint8_t convertFretCoordinatesToNote(STRING string, uint8_t fret) {
 }
 
 uint32_t convertFretCoordinatesToCOLOR(STRING string, uint8_t fret) {
-  Serial.print("String:");
-  Serial.println(string);
   if (string == E) {
-    return pixels.Color(255, 0, 0);
+    return pixels.Color(255, 0, 0); // RED
   } else if (string == A) {
-    return pixels.Color(0, 255, 0);
+    return pixels.Color(0, 0, 255); // BLUE
   } else if (string == D) {
-    return pixels.Color(0, 0, 255);
+    return pixels.Color(0, 255, 0); // GREEN
   } else if (string == G) {
-    return pixels.Color(255, 255, 255);
+    return pixels.Color(255, 255, 0); // YELLOW
   } else
     return pixels.Color(0, 0, 0);
 }
