@@ -71,7 +71,7 @@ void handleRestartInterrupt() {
 void setup() {
   pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
   Serial.begin(115200);
-  HWSERIAL.begin(19200);
+  HWSERIAL.begin(115200);
 
   pinMode(pickPin, INPUT);
 
@@ -118,8 +118,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
-  fsm.setState(WAIT_FOR_STRUM);
-  // assert(fsm.getState() == WAIT_TO_START);
+  assert(fsm.getState() == WAIT_TO_START);
   mode == TRAINING;
 }
 
@@ -148,32 +147,40 @@ void loop() {
     pixels.show();   // Send the updated pixel colors to the hardware.
 
     delay(100);
-    Serial.println("Waiting to start");
+      Serial.println("Waiting to start");
   }
 
   uint32_t bytePosition = 0;
   while (fsm.getState() == RECEIVING_SONG) {
-    Serial.println("RECEIVING_SONG");
+      Serial.println("RECEIVING_SONG");
 
     // clearing the MIDI file buffer
-    // for (int i = 0; i < MAX_MIDI_FILE_SIZE; i++) {
-    //   MIDI[i] = 0;
-    // }
-    // while (fsm.getState() == RECEIVING_SONG) {
-    //   //   TODO uncommentme
-    //   if (HWSERIAL.available() > 0) {
-    //     char incomingByte = HWSERIAL.read();
-    //     Serial.print(bytePosition);
-    //     Serial.print("\t");
-    //     Serial.println(incomingByte, HEX);
-    //     MIDI[bytePosition] = incomingByte;
-    //     bytePosition++;
-    //   }
-    // }
-    // delay(100);
+    for (int i = 0; i < MAX_MIDI_FILE_SIZE; i++) {
+      MIDI[i] = 0;
+    }
+    while (fsm.getState() == RECEIVING_SONG) {
+      //   TODO uncommentme
+      if (HWSERIAL.available() > 0) {
+        char incomingByte = HWSERIAL.read();
+        // Serial.print(bytePosition);
+        // Serial.print("\t");
+        // Serial.println(incomingByte, HEX);
+        MIDI[bytePosition] = incomingByte;
+        bytePosition++;
+      }
+    }
   }
 
   while (fsm.getState() == WAIT_FOR_STRUM) {
+    for (int i = 0; i < bytePosition; i++) {
+      Serial.print("MIDI file byte ");
+      Serial.print(i);
+      Serial.print(": ");
+      Serial.print(MIDI[i], HEX);
+      Serial.print(" ");
+      Serial.println((char)(MIDI[i]));
+    }
+
     Serial.println("Parsing MIDI file");
     // parsing the MIDI file
     parseMIDI();
@@ -186,7 +193,7 @@ void loop() {
     auto nextPrintTime = micros();
     while (fsm.getState() == WAIT_FOR_STRUM) {
       if (nextPrintTime < micros()) {
-        Serial.println("Waiting for strum");
+      Serial.println("Waiting for strum");
         nextPrintTime += 100e3;
       }
       samplePick();

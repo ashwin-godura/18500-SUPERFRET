@@ -4,8 +4,8 @@
 #include "Constants.h"
 #include "Arduino.h"
 
-// uint8_t MIDI[MAX_MIDI_FILE_SIZE];
-
+uint8_t MIDI[MAX_MIDI_FILE_SIZE];
+/*
 uint8_t MIDI[MAX_MIDI_FILE_SIZE] = {
   0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x01, 0x00, 0x03, 0x01, 0x80, 0x4D, 0x54, 0x72, 0x6B, 0x00, 0x00, 0x01, 0xD2, 0x00, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08,
   0x00, 0xFF, 0x51, 0x03, 0x08, 0x52, 0xAE, 0x00, 0xFF, 0x03, 0x15, 0x45, 0x6C, 0x65, 0x63, 0x2E, 0x20, 0x50, 0x69, 0x61, 0x6E, 0x6F, 0x20, 0x28, 0x43, 0x6C, 0x61, 0x73, 0x73, 0x69,
@@ -24,7 +24,7 @@ uint8_t MIDI[MAX_MIDI_FILE_SIZE] = {
   0x40, 0x80, 0x41, 0x00, 0x81, 0x40, 0x90, 0x41, 0x32, 0x81, 0x40, 0x80, 0x41, 0x00, 0x81, 0x40, 0x90, 0x40, 0x32, 0x81, 0x40, 0x80, 0x40, 0x00, 0x81, 0x40, 0x90, 0x40, 0x32, 0x81,
   0x40, 0x80, 0x40, 0x00, 0x81, 0x40, 0x90, 0x3E, 0x32, 0x81, 0x40, 0x80, 0x3E, 0x00, 0x81, 0x40, 0x90, 0x3E, 0x32, 0x81, 0x40, 0x80, 0x3E, 0x00, 0x81, 0x40, 0x90, 0x3C, 0x32, 0x83,
   0x00, 0x80, 0x3C, 0x00, 0x00, 0xFF, 0x2F, 0x00
-};
+};*/
 
 typedef struct {
   uint32_t duration;  // [ticks / quarter-note]
@@ -112,6 +112,7 @@ void parseMIDI() {
       if (i + 4 <= NUM_BYTES and found_MThd_Chunck(&MIDI[i])) {
         parsed_MThd = true;
         i += 4;
+        Serial.println("ZZZZ");
         continue;
       }
     } else if (not parsed_bytes_in_MThd_header) {  // look at next 4 bytes for size of MThd header
@@ -120,6 +121,7 @@ void parseMIDI() {
         assert(bytes_in_MThd_header == 6);  //assuming 6 bytes of header after MThd
         parsed_bytes_in_MThd_header = true;
         i += 4;
+        Serial.println("WWWW");
         continue;
       }
     } else if (not parsed_ticks_per_quarter_note) {
@@ -130,11 +132,13 @@ void parseMIDI() {
       parsed_ticks_per_quarter_note = true;
 
       i += 2;
+      Serial.println("EEEE");
       continue;
     } else if (not parsed_MTrk) {  // look at next 4 bytes for "4D 54 72 6B" MThd sequence
       if (i + 4 <= NUM_BYTES and found_MTrk_Chunck(&MIDI[i])) {
         parsed_MTrk = true;
         i += 4;
+        Serial.println("DDDD");
         continue;
       }
     } else if (not parsed_bytes_in_MTrk_header) {  // look at next 4 bytes for size of MThd header
@@ -142,6 +146,7 @@ void parseMIDI() {
         bytes_in_MTrk_header = (((uint32_t)(MIDI[i])) << 24) | (((uint32_t)(MIDI[i + 1])) << 16) | (((uint32_t)(MIDI[i + 2])) << 8) | ((uint32_t)(MIDI[i + 3]));
         parsed_bytes_in_MTrk_header = true;
         i += 4;
+        Serial.println("CCCC");
         continue;
       }
     } else {  //parse the MTrk chunck:
@@ -149,19 +154,19 @@ void parseMIDI() {
       uint64_t dt_ticks = decodeVariableLengthEncoding(&MIDI[i], bytes_read);
       i += bytes_read;
 
-
-
-
+      Serial.println("BBB");
       if (found_Time_Signature(&MIDI[i])) {
         i += 3;
         //not at the actual time signature info
         i += 4;
         // TODO parse time signature
+        Serial.println("AAA");
         continue;
       } else if (found_Set_Tempo_Event(&MIDI[i])) {
         i += 3;
         MICROSECONDS_PER_BEAT = (((uint32_t)(MIDI[i])) << 16) | (((uint32_t)(MIDI[i + 1])) << 8) | ((uint32_t)(MIDI[i + 2]));
         i += 3;
+        Serial.println("AA");
         continue;
       } else if (found_Track_Name(&MIDI[i])) {
         i += 2;
@@ -172,11 +177,12 @@ void parseMIDI() {
         i += 1;
 
         // ignore track name
-
         i += track_name_size;
+        Serial.println("A");
         continue;
       } else if (found_Program_Change(&MIDI[i])) {  // ignore this
         i += 2;
+        Serial.println("B");
         continue;
       } else if (found_Note_ON(&MIDI[i])) {
         //ignoring velocity
@@ -184,6 +190,7 @@ void parseMIDI() {
         i += 3;
         NUM_NOTES_FOUND++;
         assert(NUM_NOTES_FOUND <= MAX_NUM_NOTES);
+        Serial.println("C");
         continue;
       } else if (found_Note_OFF(&MIDI[i])) {
         //ignoring velocity
@@ -191,8 +198,10 @@ void parseMIDI() {
         i += 3;
         NUM_NOTES_FOUND++;
         assert(NUM_NOTES_FOUND <= MAX_NUM_NOTES);
+        Serial.println("D");
         continue;
       } else if (found_End_Of_Track(&MIDI[i])) {
+        Serial.println("E");
         return;
       } else {
         //should not reach here
