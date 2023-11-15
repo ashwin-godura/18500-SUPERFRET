@@ -60,7 +60,7 @@ int NOTE_IDX = 0;
 #define UNUSED_INTERRUPT_10 37
 
 #define BUZZER_PIN 28
-#define BUZZER_VOLUME 100  //[50-255]
+#define BUZZER_VOLUME 0 //[50-255]
 
 void handleFileInterrupt() {
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false,
@@ -328,8 +328,9 @@ void setup() {
 
   pinMode(BUZZER_PIN, OUTPUT);
   analogWriteFrequency(BUZZER_PIN, 100'000);
-
-
+  
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   assert(fsm.getState() == WAIT_TO_START);
   mode == TRAINING;
