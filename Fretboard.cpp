@@ -4,8 +4,8 @@
 #include "Notes.h"
 #include "PINS.h"
 
-void clearShiftRegister() { // clock a 0 though the shift register NUM_FRETS + 1
-                            // times to ensure it is cleared
+void clearShiftRegister() {  // clock a 0 though the shift register NUM_FRETS + 1
+                             // times to ensure it is cleared
   digitalWrite(fretSimulusPin, LOW);
   for (int fret = 0; fret < NUM_FRETS + 1; fret++) {
     digitalWrite(fretClockPin, LOW);
@@ -35,6 +35,8 @@ void sampleFrets() {
   // Serial.println("Cleared");
   loadShiftRegister();
   // Serial.println("Loaded");
+  STRING string = None;
+  notePlayed.string = None;
   for (int fret = 0; fret < NUM_FRETS; fret++) {
     STRING string = None;
     if (digitalRead(E_stringPin)) {
@@ -49,7 +51,7 @@ void sampleFrets() {
     if (digitalRead(G_stringPin)) {
       string = G;
     }
-    if (string != None) { // if already sensed a note, don't read again and
+    if (notePlayed.string == None and string != None) {  // if already sensed a note, don't read again and
       // potentially overwrite it.
       notePlayed.fret_idx = fret;
       notePlayed.string = string;
@@ -99,8 +101,7 @@ void samplePick() {
   digitalWrite(pickPin, LOW);
   pinMode(pickPin, INPUT);
   //
-  if (E_stringPin_count || A_stringPin_count || D_stringPin_count ||
-      G_stringPin_count) {
+  if (E_stringPin_count || A_stringPin_count || D_stringPin_count || G_stringPin_count) {
     currStrumDetection = true;
   }
 
@@ -114,8 +115,7 @@ void samplePick() {
   //   Serial.println("Strum on G string");
   // }
 
-  if (prevStrumDetection and not currStrumDetection and
-      MIN_TIME_BETWEEN_STRUMS < (micros() - timeOfLastStrum)) {
+  if (prevStrumDetection and not currStrumDetection and MIN_TIME_BETWEEN_STRUMS < (micros() - timeOfLastStrum)) {
     Serial.println("Strummed");
     strum = true;
     fsm.update(false, true, false, false, false);

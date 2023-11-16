@@ -2,32 +2,16 @@
 #include "Arduino.h"
 #include "Constants.h"
 #include <Adafruit_NeoPixel.h>
+#include <cassert>
 #include <cstdint>
 
 uint8_t get_LEDidx_from_note(NOTE_t note) {
   // TODO index into a look-up table
-  return (4 * note.fret_idx + convert_STRING_to_string_idx(note.string)) %
-         NUMPIXELS;
+  uint8_t LED_idx =
+      4 * (note.fret_idx % 5) + (3 - convert_STRING_to_string_idx(note.string));
+  assert(LED_idx < NUMPIXELS);
+  return LED_idx;
 }
-
-uint8_t NoteArray[NUM_FRETS][4] = {
-    //       E            A             D           G
-    0x43, 0x42, 0x41, 0x40, // Fret 0 (open string)
-    0x47, 0x46, 0x45, 0x44, // Fret 1
-    0x4B, 0x4A, 0x49, 0x48, // Fret 2
-    0x00, 0x3E, 0x3D, 0x3C, // Fret 3
-    0x00, 0x00, 0x00, 0x05, // Fret 4
-    0x00, 0x00, 0x00, 0x00, // Fret 5
-    0x00, 0x00, 0x00, 0x00, // Fret 6
-    0x00, 0x00, 0x00, 0x00, // Fret 7
-    0x00, 0x00, 0x00, 0x00, // Fret 8
-    0x00, 0x00, 0x00, 0x00, // Fret 9
-    0x00, 0x00, 0x00, 0x00, // Fret 10
-    0x00, 0x00, 0x00, 0x00, // Fret 11
-    0x00, 0x00, 0x00, 0x00, // Fret 12
-    0x00, 0x00, 0x00, 0x00, // Fret 13
-    0x00, 0x00, 0x00, 0x00  // Fret 14
-};
 
 STRING convert_string_idx_to_STRING(uint8_t string_idx) {
   if (string_idx == 0) {

@@ -2,7 +2,7 @@
 
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
-#include <avr/power.h> // Required for 16 MHz Adafruit Trinket
+#include <avr/power.h>  // Required for 16 MHz Adafruit Trinket
 #endif
 
 #include "Constants.h"
@@ -17,7 +17,8 @@ uint8_t noteFile[MAX_NOTE_FILE_SIZE];
 
 Adafruit_NeoPixel pixels(NUMPIXELS, NEO_PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
-enum USER_MODE { TRAINING, CONTINUOUS };
+enum USER_MODE { TRAINING,
+                 CONTINUOUS };
 
 USER_MODE mode;
 
@@ -27,26 +28,31 @@ StateMachine fsm;
 int NOTE_IDX = 0;
 void printState() {
   switch (fsm.getState()) {
-  case WAIT_TO_START: {
-    Serial.println("FSM state: WAIT_TO_START");
-    break;
-  }
-  case RECEIVING_SONG: {
-    Serial.println("FSM state: RECEIVING_SONG");
-    break;
-  }
-  case WAIT_FOR_STRUM: {
-    Serial.println("FSM state: WAIT_FOR_STRUM");
-    break;
-  }
-  case USER_EXPERIENCE: {
-    Serial.println("FSM state: USER_EXPERIENCE");
-    break;
-  }
-  case PAUSED: {
-    Serial.println("FSM state: PAUSED");
-    break;
-  }
+    case WAIT_TO_START:
+      {
+        Serial.println("FSM state: WAIT_TO_START");
+        break;
+      }
+    case RECEIVING_SONG:
+      {
+        Serial.println("FSM state: RECEIVING_SONG");
+        break;
+      }
+    case WAIT_FOR_STRUM:
+      {
+        Serial.println("FSM state: WAIT_FOR_STRUM");
+        break;
+      }
+    case USER_EXPERIENCE:
+      {
+        Serial.println("FSM state: USER_EXPERIENCE");
+        break;
+      }
+    case PAUSED:
+      {
+        Serial.println("FSM state: PAUSED");
+        break;
+      }
   }
 }
 
@@ -64,7 +70,7 @@ void handleRestartInterrupt() {
 }
 
 void setup() {
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
   Serial.begin(115200);
   HWSERIAL.begin(115200);
 
@@ -119,8 +125,8 @@ void setup() {
 
 unsigned long nextBuzzerTime = 0;
 bool buzzer_state = false;
-unsigned long buzzerONtime = 100'000;  // [us]
-unsigned long buzzerOFFtime = 500'000; // [us]
+unsigned long buzzerONtime = 100'000;   // [us]
+unsigned long buzzerOFFtime = 500'000;  // [us]
 void loop() {
   //   while (1) {
   //     if (nextBuzzerTime <= micros()) {
@@ -138,8 +144,10 @@ void loop() {
   // TODO check if pi wants the system to be in TRAINING or CONTINUOUS mode
 
   while (fsm.getState() == WAIT_TO_START) {
-    pixels.clear(); // Set all pixel colors to 'off'
-    pixels.show();  // Send the updated pixel colors to the hardware.
+    NUM_NOTES_FOUND = 0;
+    NOTE_IDX = 0;
+    pixels.clear();  // Set all pixel colors to 'off'
+    pixels.show();   // Send the updated pixel colors to the hardware.
 
     delay(100);
     Serial.println("Waiting to start");
@@ -190,7 +198,6 @@ void loop() {
       samplePick();
       delay(10);
     }
-    NOTE_IDX = 0;
   }
 
   unsigned long long nextFretboardSampleTime = 0;
@@ -199,26 +206,26 @@ void loop() {
   while (fsm.getState() == USER_EXPERIENCE) {
     if (first_time_in_user_experience) {
       Serial.println("USER_EXPERIENCE");
-      pixels.clear(); // Set all pixel colors to 'off'
-      pixels.show();  // Send the updated pixel colors to the hardware.
+      pixels.clear();  // Set all pixel colors to 'off'
+      pixels.show();   // Send the updated pixel colors to the hardware.
       nextFretboardSampleTime = micros();
       first_time_in_user_experience = false;
       time_last_LED_was_turned_off = 0;
     }
 
-    NOTE_t expected_note;
-    uint8_t LED_idx;
     if (NOTE_IDX < NUM_NOTES_FOUND) {
-      expected_note = notes[NOTE_IDX];
-      LED_idx = get_LEDidx_from_note(expected_note);
+      NOTE_t expected_note = notes[NOTE_IDX];
+      uint8_t LED_idx = get_LEDidx_from_note(expected_note);
       if (mode == TRAINING) {
         bool LED_already_ON = pixels.getPixelColor(LED_idx);
         bool move_onto_next_note =
-            (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
+          (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
         if (not LED_already_ON and move_onto_next_note) {
           Serial.print("Turning LED ");
           Serial.print(LED_idx);
-          Serial.print(" ON. Note: [");
+          Serial.print(" ON. Note ");
+          Serial.print(NOTE_IDX);
+          Serial.print(": ");
           printNote(expected_note);
           Serial.println("]");
           pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(expected_note));
@@ -228,27 +235,32 @@ void loop() {
         samplePick();
 
         if (strum and notePlayed.valid()) {
-          Serial.print(NOTE_IDX, DEC);
-          Serial.print("Note Played: ");
+          Serial.print("Note index: ");
+          Serial.println(NOTE_IDX, DEC);
+
+          Serial.print("Played: ");
           printNote(notePlayed);
           Serial.println();
+
           Serial.print("Expected: ");
           printNote(expected_note);
           Serial.println();
         }
 
-        if (strum and notePlayed == expected_note) { // move onto the next note
+        if (strum and notePlayed == expected_note) {  // move onto the next note
           Serial.print("Turning LED ");
           Serial.print(LED_idx);
-          Serial.print(" OFF. Note: [");
+          Serial.print(" OFF. Note ");
+          Serial.print(NOTE_IDX);
+          Serial.print(": ");
           printNote(expected_note);
           Serial.println("]");
           pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
           time_last_LED_was_turned_off = micros();
           NOTE_IDX++;
         }
-        pixels.show(); // Send the updated pixel colors to the hardware.
-      } else {         // CONTINUOUS MODE
+        pixels.show();  // Send the updated pixel colors to the hardware.
+      } else {          // CONTINUOUS MODE
 
         // TODO aggregate stats
         // auto us_duration = uS_per_tick * expected_note.duration;

@@ -9,8 +9,7 @@ NOTE_t notes[MAX_NOTES];
 uint32_t NUM_NOTES_FOUND = 0;
 
 uint32_t parse_uint32_t(uint8_t *buff) {
-  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) |
-         (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
+  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) | (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
 }
 
 void parseNoteFile(uint8_t *noteFile) {
@@ -18,7 +17,7 @@ void parseNoteFile(uint8_t *noteFile) {
   for (int i = 4; i < file_length; i++) {
     notes[NUM_NOTES_FOUND].startTime = parse_uint32_t(&noteFile[i]);
     i += 4;
-    notes[NUM_NOTES_FOUND].fret_idx = noteFile[i] & 0x0F;
+    notes[NUM_NOTES_FOUND].fret_idx = (noteFile[i] & 0x0F) % NUM_FRETS;
 
     // subtract 1 because data received is one-based index
     uint8_t string_idx = ((noteFile[i] & 0xF0) >> 4) - 1;
