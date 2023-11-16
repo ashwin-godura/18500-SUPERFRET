@@ -1,13 +1,14 @@
 #ifndef _CAPSTONE_FRETBOARD_
 #define _CAPSTONE_FRETBOARD_
 
+#include "Notes.h"
 #include "StateMachine.h"
 #include <cstdint>
 
 void clearShiftRegister();
 void loadShiftRegister();
 
-extern uint8_t notePlayed;
+extern NOTE_t notePlayed;
 void sampleFrets();
 
 extern StateMachine fsm;

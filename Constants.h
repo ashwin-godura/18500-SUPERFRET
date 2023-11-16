@@ -4,8 +4,8 @@
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS 16 // Popular NeoPixel ring size
 
-#define MAX_MIDI_FILE_SIZE 10'000 // [bytes]
-#define MAX_NUM_NOTES 1000        // [notes] // TODO hold more notes?
+#define MAX_NOTE_FILE_SIZE 10'000 // [bytes]
+#define MAX_NOTES 1000        // [notes] // TODO hold more notes?
 
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial5

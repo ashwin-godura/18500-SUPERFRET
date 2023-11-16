@@ -4,9 +4,10 @@
 #include <Adafruit_NeoPixel.h>
 #include <cstdint>
 
-uint8_t get_LEDidx_from_note(uint8_t note) {
+uint8_t get_LEDidx_from_note(NOTE_t note) {
   // TODO index into a look-up table
-  return note % NUMPIXELS;
+  return (4 * note.fret_idx + convert_STRING_to_string_idx(note.string)) %
+         NUMPIXELS;
 }
 
 uint8_t NoteArray[NUM_FRETS][4] = {
@@ -53,43 +54,16 @@ uint8_t convert_STRING_to_string_idx(STRING string) {
     return 0;
 }
 
-void convertNoteToFretCoordinates(uint8_t note, STRING &string, uint8_t &fret) {
-  for (int fret_idx = 0; fret_idx < NUM_FRETS; fret_idx++) {
-    for (int string_idx = 0; string_idx < 4; string_idx++) {
-      if (NoteArray[fret_idx][string_idx] == note) {
-        string = convert_string_idx_to_STRING(string_idx);
-        fret = fret_idx;
-        return;
-      }
-    }
-  }
-}
-
-uint8_t convertFretCoordinatesToNote(STRING string, uint8_t fret) {
-  if (string == None) {
-    return 0x00;
-  }
-  uint8_t string_idx = convert_STRING_to_string_idx(string);
-  return NoteArray[fret][string_idx];
-}
-
-uint32_t convertFretCoordinatesToCOLOR(STRING string, uint8_t fret) {
-  if (string == E) {
+uint32_t convert_Note_To_COLOR(NOTE_t note) {
+  static Adafruit_NeoPixel pixels;
+  if (note.string == E) {
     return pixels.Color(255, 0, 0); // RED
-  } else if (string == A) {
+  } else if (note.string == A) {
     return pixels.Color(0, 0, 255); // BLUE
-  } else if (string == D) {
+  } else if (note.string == D) {
     return pixels.Color(0, 255, 0); // GREEN
-  } else if (string == G) {
+  } else if (note.string == G) {
     return pixels.Color(255, 100, 0); // YELLOW
   } else
     return pixels.Color(0, 0, 0);
-}
-
-uint32_t convert_Note_To_COLOR(uint8_t note) {
-  STRING string;
-  uint8_t fret;
-  convertNoteToFretCoordinates(note, string, fret);
-
-  return convertFretCoordinatesToCOLOR(string, fret);
 }

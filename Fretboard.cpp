@@ -29,13 +29,12 @@ void loadShiftRegister() {
   delayMicroseconds(DIGITAL_DELAY);
 }
 
-uint8_t notePlayed = 0;
+NOTE_t notePlayed;
 void sampleFrets() {
   clearShiftRegister();
   // Serial.println("Cleared");
   loadShiftRegister();
   // Serial.println("Loaded");
-  notePlayed = 0;
   for (int fret = 0; fret < NUM_FRETS; fret++) {
     STRING string = None;
     if (digitalRead(E_stringPin)) {
@@ -50,14 +49,15 @@ void sampleFrets() {
     if (digitalRead(G_stringPin)) {
       string = G;
     }
-    if (not notePlayed) { // if already sensed a note, don't read again and
+    if (string != None) { // if already sensed a note, don't read again and
       // potentially overwrite it.
-      notePlayed = convertFretCoordinatesToNote(string, fret);
-    //   Serial.print(convert_STRING_to_string_idx(string));
-    //   Serial.print("\t");
-    //   Serial.print(fret);
-    //   Serial.print("\t");
-    //   Serial.println(notePlayed, HEX);
+      notePlayed.fret_idx = fret;
+      notePlayed.string = string;
+      //   Serial.print(convert_STRING_to_string_idx(string));
+      //   Serial.print("\t");
+      //   Serial.print(fret);
+      //   Serial.print("\t");
+      //   Serial.println(notePlayed, HEX);
     } else {
       // Serial.println(notePlayed, HEX);
     }
