@@ -31,7 +31,7 @@
           <input type="radio" name="mode" value="performance"> Performance
         </label>
     
-        <button onclick=submitForm()>Submit</button>
+        <button id="submit-button" onclick=submitForm()>Submit</button>
     <br>
 
     <canvas id="myCanvas" width="1200" height="500"></canvas>
@@ -39,7 +39,7 @@
     <br>
     <button id="close-button" onclick=stopFile()>Stop</button>
     <button id="pause-button" onclick=pauseFile()>Pause</button>
-    <button id="restart-button" onclick=restartFile()>Restart</button>
+    <!-- <button id="restart-button" onclick=restartFile()>Restart</button> -->
     <button id="delete-button" onclick=deleteBlock()>Simulate Strum</button>
     <button id="listen-button" onclick="toggleListening()">Toggle Listening</button>
 
@@ -115,21 +115,21 @@
             return false
         }
 
-        function restartFile() {
-            var track = currentTrack
+        // function restartFile() {
+        //     var track = currentTrack
 
-            fetch('/getActiveFile?speed=' + 5 + "&track=" + track)
-                .then(response => response.json())
-                .then(data => {
-                    // Handle the response data
-                    console.log(data.notes)
-                    playNotes(data.notes);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            return false
-        }
+        //     fetch('/getActiveFile?speed=' + 5 + "&track=" + track)
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             // Handle the response data
+        //             console.log(data.notes)
+        //             playNotes(data.notes);
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //         });
+        //     return false
+        // }
 
         function spawnBlock(fret, stringNumber, note_Value, time_played) {
             switch (stringNumber) {
@@ -258,7 +258,7 @@
         }
 
         function submitForm() {
-
+            document.getElementById('submit-button').innerText = "re-submit"
             speed = $('#speed').val();
             currentTrack = $('#options').val();
             mode = $('input[name="mode"]:checked').val();

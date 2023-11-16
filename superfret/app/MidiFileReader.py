@@ -71,6 +71,29 @@ def midi_to_bass_fret_string(midi_note, prev_fret, prev_string):
 
     return fret_answer, string_answer
 
+def convert_notes_to_bytes(notes):
+    byte_array = bytearray()
+
+    for note in notes:
+        # Convert start time to an unsigned 32-bit integer in milliseconds
+        start_time_ms = int(note["start_time"] * 1000)
+        start_time_bytes = start_time_ms.to_bytes(4, byteorder='big', signed=False)
+
+        # Combine fret and string values into one byte
+        fret_and_string = ((note["string"] << 4)) | (note["fret"])
+        fret_and_string_byte = bytes([fret_and_string])
+
+        # Append the bytes to the result
+        byte_array.extend(start_time_bytes + fret_and_string_byte)
+
+    total_length = len(byte_array) + 4
+    total_length_bytes = total_length.to_bytes(4, byteorder='big', signed=False)
+
+    # Prepend the length bytes to the byte array
+    byte_array = total_length_bytes + byte_array
+
+    return byte_array
+
 def get_midi_tracks(filepath):
     try:
 
@@ -97,40 +120,52 @@ def get_track_by_name(midi_data, track_name):
             return instrument
     return None
     
-def process_midi_for_teensy(midi_file_path, speed_factor, selected_track):
-    try:
-        # Load the MIDI file using pretty_midi
-        with open(str(midi_file_path), 'rb') as file:
-            midi_data = pretty_midi.PrettyMIDI(file)
+# def process_midi_for_teensy(midi_file_path, speed_factor, selected_track):
+
+#     # instead send byte array first four bytes is start time in millis, next byte is packed fret and string
+#     try:
+#         # Load the MIDI file using pretty_midi
+#         with open(str(midi_file_path), 'rb') as file:
+#             midi_data = pretty_midi.PrettyMIDI(file)
+
+#         print("file=" + str(midi_file_path))
+#         midi_bytes_buffer = io.BytesIO()
+#         midi_data.write(midi_bytes_buffer)
+#         midi_bytes = midi_bytes_buffer.getvalue()
+#         midi_bytes_buffer.close()
+
+#         print("len=" + str(len(midi_bytes)))
+#         hex_string = ' '.join([hex(byte) for byte in midi_bytes])
+#         print(hex_string)
         
-        # Adjust the tempo by the speed factor
-        #  midi_data.adjust_times(speed_factor)
+#         # Adjust the tempo by the speed factor
+#         #  midi_data.adjust_times(speed_factor)
 
-        # Select the specified track
-        selected_instrument = get_track_by_name(midi_data, selected_track)
-        if selected_instrument is None:
-            selected_instrument = midi_data.instruments[-1]
+#         # Select the specified track
+#         selected_instrument = get_track_by_name(midi_data, selected_track)
+#         if selected_instrument is None:
+#             selected_instrument = midi_data.instruments[-1]
 
-        # Create a new PrettyMIDI object with only the selected track
-        new_midi_data = pretty_midi.PrettyMIDI()
-        new_midi_data.instruments.append(selected_instrument)
+#         # Create a new PrettyMIDI object with only the selected track
+#         new_midi_data = pretty_midi.PrettyMIDI()
+#         new_midi_data.instruments.append(selected_instrument)
         
-        prevfret = 0
-        prevstring = 1
-        for note in selected_instrument.notes:
-            # Modify the pitch attribute (replace 60 with the desired new pitch value)
-            prevfret, prevstring = midi_to_bass_fret_string(note, prevfret, prevstring)
-            # print("prevfret {} prevstring {} makes {}".format(prevfret, prevstring, ((prevstring << 4) + prevfret)))
-            note.pitch = (prevstring << 4) + prevfret
+#         # prevfret = 0
+#         # prevstring = 1
+#         # for note in selected_instrument.notes:
+#         #     # Modify the pitch attribute (replace 60 with the desired new pitch value)
+#         #     prevfret, prevstring = midi_to_bass_fret_string(note, prevfret, prevstring)
+#         #     # print("prevfret {} prevstring {} makes {}".format(prevfret, prevstring, ((prevstring << 4) + prevfret)))
+#         #     note.pitch = (prevstring << 4) + prevfret
 
-        # Convert the PrettyMIDI object to bytes
-        midi_bytes_buffer = io.BytesIO()
-        new_midi_data.write(midi_bytes_buffer)
-        midi_bytes = midi_bytes_buffer.getvalue()
-        midi_bytes_buffer.close()
+#         # Convert the PrettyMIDI object to bytes
+#         midi_bytes_buffer = io.BytesIO()
+#         new_midi_data.write(midi_bytes_buffer)
+#         midi_bytes = midi_bytes_buffer.getvalue()
+#         midi_bytes_buffer.close()
         
-        return midi_bytes
+#         return midi_bytes
 
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return None

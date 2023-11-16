@@ -37,10 +37,16 @@ class Uart:
             self.set_gpio_high(self.start_pin)
             time.sleep(0.1)
 
+            # print("len=" + str(len(file)))
+            # hex_string = ' '.join([hex(byte) for byte in file])
+            # print(hex_string)
+
+            # file = Uart.remove_bytes_between_markers(file)
             # Perform UART communication (send file, for example)
             print("len=" + str(len(file)))
             hex_string = ' '.join([hex(byte) for byte in file])
             print(hex_string)
+
             self.uart.write(file)
 
             time.sleep(0.5)  # Briefly set GPIO pin high
@@ -52,6 +58,24 @@ class Uart:
 
         print("file sent")
         return
+    
+    def remove_bytes_between_markers(byte_array):
+        # Define the marker sequences
+        start_marker = bytes([0x4d, 0x54, 0x72, 0x6b])
+        end_marker = bytes([0xff, 0x2f, 0x00])
+
+        # Find the indices of the start and end markers
+        start_index = byte_array.find(start_marker)
+        end_index = byte_array.find(end_marker)
+
+        # If both markers are found, remove the bytes between them
+        if start_index != -1 and end_index != -1:
+            byte_array = byte_array[:start_index] + byte_array[end_index + len(end_marker):]
+            print("Bytes between markers removed successfully.")
+        else:
+            print("Markers not found in the byte array.")
+
+        return byte_array
     
     def read_feedback(self):
         try:

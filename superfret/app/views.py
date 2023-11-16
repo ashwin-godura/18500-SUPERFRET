@@ -139,7 +139,7 @@ def getActiveFile(request):
 
 
    notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, track) 
-   notes_for_teensy = app.MidiFileReader.process_midi_for_teensy(file_path, speed, track)
+   notes_for_teensy = app.MidiFileReader.convert_notes_to_bytes(notes_for_webapp)
 
    u.restart_song()
    u.start_song(notes_for_teensy)
