@@ -36,6 +36,7 @@ void sampleFrets() {
   loadShiftRegister();
   // Serial.println("Loaded");
   bool alreadySensedContact = false;
+  notePlayed.fret_idx = 0;
   for (int fret = NUM_FRETS - 1; fret >= 0; fret--) {
     bool sensedContact = digitalRead(E_stringPin) || digitalRead(A_stringPin) ||
                          digitalRead(D_stringPin) || digitalRead(G_stringPin);

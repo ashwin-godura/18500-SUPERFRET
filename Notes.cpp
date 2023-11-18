@@ -9,6 +9,11 @@ uint8_t get_LEDidx_from_note(NOTE_t note) {
   // TODO index into a look-up table
   uint8_t LED_idx = 4 * (NUM_FRETS - note.fret_idx - 1) +
                     convert_STRING_to_string_idx(note.string);
+  if (note.fret_idx == 0) { // open string fret is backwards
+    uint16_t last_LED_idx_for_fret_0 = NUMPIXELS - 1;
+    uint16_t first_LED_idx_for_fret_0 = NUMPIXELS - 4;
+    LED_idx = first_LED_idx_for_fret_0 + last_LED_idx_for_fret_0 - LED_idx;
+  }
   assert(LED_idx < NUMPIXELS);
   return LED_idx;
 }
