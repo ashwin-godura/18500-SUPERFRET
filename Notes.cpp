@@ -7,8 +7,8 @@
 
 uint8_t get_LEDidx_from_note(NOTE_t note) {
   // TODO index into a look-up table
-  uint8_t LED_idx =
-      4 * (note.fret_idx % 5) + (3 - convert_STRING_to_string_idx(note.string));
+  uint8_t LED_idx = 4 * (NUM_FRETS - note.fret_idx - 1) +
+                    convert_STRING_to_string_idx(note.string);
   assert(LED_idx < NUMPIXELS);
   return LED_idx;
 }
