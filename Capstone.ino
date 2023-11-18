@@ -245,7 +245,13 @@ void loop() {
           Serial.println();
         }
 
-        if (strum and notePlayed == expected_note) { // move onto the next note
+        bool strummed_correctly =
+            (strum and (stringStrummed == expected_note.string));
+        bool played_open_string =
+            (notePlayed.fret_idx == 0 and expected_note.fret_idx == 0);
+        if (strummed_correctly and
+            (notePlayed == expected_note or
+             played_open_string)) { // move onto the next note
           Serial.print("Turning LED ");
           Serial.print(LED_idx);
           Serial.print(" OFF. Note ");

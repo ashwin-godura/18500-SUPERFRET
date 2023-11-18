@@ -13,6 +13,7 @@ void sampleFrets();
 
 extern StateMachine fsm;
 extern bool strum;
+extern STRING stringStrummed;
 void samplePick();
 
-#endif // _CAPSTONE_FRETBOARD_
+#endif  // _CAPSTONE_FRETBOARD_

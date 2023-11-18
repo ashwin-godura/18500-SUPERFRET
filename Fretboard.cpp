@@ -37,12 +37,27 @@ void sampleFrets() {
   // Serial.println("Loaded");
   bool alreadySensedContact = false;
   notePlayed.fret_idx = 0;
+  notePlayed.string = None;
   for (int fret = NUM_FRETS - 1; fret >= 0; fret--) {
     bool sensedContact = digitalRead(E_stringPin) || digitalRead(A_stringPin) ||
                          digitalRead(D_stringPin) || digitalRead(G_stringPin);
     if (not alreadySensedContact and
         sensedContact) { // haven't already sensed a note.
+      STRING string = None;
+      if (digitalRead(E_stringPin)) {
+        string = E;
+      }
+      if (digitalRead(A_stringPin)) {
+        string = A;
+      }
+      if (digitalRead(D_stringPin)) {
+        string = D;
+      }
+      if (digitalRead(G_stringPin)) {
+        string = G;
+      }
       notePlayed.fret_idx = fret;
+      notePlayed.string = string;
       //   Serial.print(convert_STRING_to_string_idx(string));
       //   Serial.print("\t");
       //   Serial.print(fret);
@@ -68,6 +83,7 @@ int D_stringPin_count;
 int G_stringPin_count;
 unsigned long long timeOfLastStrum = 0;
 bool strum = false;
+STRING stringStrummed = None;
 STRING prevString = None;
 void samplePick() {
   E_stringPin_count = 0;
@@ -101,16 +117,21 @@ void samplePick() {
     currString = G;
   }
 
+  stringStrummed = None;
+  
   bool pick_left_the_string = (prevString != None and currString == None);
   if (pick_left_the_string and
       MIN_TIME_BETWEEN_STRUMS < (micros() - timeOfLastStrum)) {
+    stringStrummed = prevString;
     Serial.println("Strummed");
+    Serial.print(prevString);
+    Serial.print("\t");
+    Serial.print(stringStrummed);
+    Serial.print("\t");
+    Serial.println(currString);
     strum = true;
     fsm.update(false, true, false, false, false);
     timeOfLastStrum = micros();
-    notePlayed.string = prevString;
-  } else {
-    notePlayed.string = None;
   }
 
   prevString = currString;
