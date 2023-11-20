@@ -273,7 +273,22 @@ void loop() {
       } else {  // PERFORMANCE MODE
                 // TODO aggregate stats
 
-        //TOOD handle NOTE_IDX + 1
+
+
+        sampleFrets();
+        samplePick();
+        if (strum) {
+          bool strummed_correctly =
+            (strum and (stringStrummed == expected_note.string));
+          bool played_open_string =
+            (notePlayed.fret_idx == 0 and expected_note.fret_idx == 0);
+          if (strummed_correctly and (notePlayed == expected_note or played_open_string)) {  // move onto the next note
+            Serial.println("Correct -------- Correct -------- Correct -------- Correct");
+          } else {
+            Serial.println("------ Incorrect ------ Incorrect ------ Incorrect ------");
+          }
+        }
+
         auto current_note_starttime = 1000 * notes[NOTE_IDX].startTime;
         auto next_note_starttime = 1000 * notes[NOTE_IDX + 1].startTime;
         auto time_in_user_experience = micros() - time_entered_user_experience;
