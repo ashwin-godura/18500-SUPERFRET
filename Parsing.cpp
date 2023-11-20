@@ -9,7 +9,8 @@ NOTE_t notes[MAX_NOTES];
 uint32_t NUM_NOTES_FOUND = 0;
 
 uint32_t parse_uint32_t(uint8_t *buff) {
-  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) | (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
+  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) |
+         (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
 }
 
 void parseNoteFile(uint8_t *noteFile) {
@@ -24,6 +25,7 @@ void parseNoteFile(uint8_t *noteFile) {
     notes[NUM_NOTES_FOUND].string = convert_string_idx_to_STRING(string_idx);
     NUM_NOTES_FOUND++;
   }
+  NUM_NOTES_FOUND--; // ignore last dummy note
 }
 
 void printNote(const NOTE_t &note) {
