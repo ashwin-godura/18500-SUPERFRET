@@ -14,7 +14,7 @@ class AddFileForm(forms.Form):
     name = forms.CharField(max_length=255)
     type = forms.ChoiceField(choices=FILE_TYPE)
     file = forms.FileField(
-        label='Select static file',
+        label='Select file',
         widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
     )
     # Customizes form validation for properties that apply to more

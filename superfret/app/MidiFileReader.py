@@ -4,7 +4,7 @@ import sys
 import mido
 import pretty_midi
 
-MAX_FRET_VALUE = 12
+MAX_FRET_VALUE = 14
 
 def extract_notes_from_track(track, speed):
     notes = []
@@ -17,10 +17,22 @@ def extract_notes_from_track(track, speed):
         note_dict = {
             "note_value": note.pitch,
             "start_time": (note.start * 5) / speed,
+            "end_time": (note.end * 5) / speed,
             "fret": fret,
             "string": string
         }
         notes.append(note_dict)
+
+
+    # send a dummy note for ending the file
+    prev_end_time = notes[-1]["end_time"]
+    notes.append({
+            "note_value": note.pitch,
+            "start_time": prev_end_time,
+            "end_time": prev_end_time+1,
+            "fret": 15,
+            "string": 15
+        })
 
     return notes
 

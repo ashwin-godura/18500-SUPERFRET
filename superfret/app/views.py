@@ -80,7 +80,7 @@ def deletefile(request, name):
       return redirect(reverse('home'))
    
    file = MidiFile.objects.all().filter(name=name)[0]
-   os.remove(str(file.file))
+   os.remove("app/static/images/" + str(file.file))
    file.delete()
    return redirect(reverse('home'))
 
