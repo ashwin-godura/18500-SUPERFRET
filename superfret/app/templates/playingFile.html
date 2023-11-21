@@ -34,7 +34,7 @@
         <button id="submit-button" onclick=submitForm()>Submit</button>
     <br>
 
-    <canvas id="myCanvas" width="1200" height="500"></canvas>
+    <canvas id="myCanvas" width="1400" height="500"></canvas>
 
     <br>
     <button id="close-button" onclick=stopFile()>Stop</button>
@@ -164,7 +164,7 @@
             }
             rectangles.push(rect);
 
-            // console.log("spawned block with time=",time_played," at ycoord=" + yCoordinate)
+            console.log("spawned block ",rectangles.length," at ycoord=" + yCoordinate)
 
             blockCount++;
         }
@@ -188,7 +188,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             // draw the initial image
             const image = new Image();
-            image.src = 'https://bassplayercenter.com/wp-content/uploads/2019/10/All-notes-on-bass-horiz.png';
+            // image.src = 'https://bassplayercenter.com/wp-content/uploads/2019/10/All-notes-on-bass-horiz.png';
+            image.src = 'getBassGuitarImage';
             ctx.drawImage(image, 0, 200);
 
             pause = false
@@ -202,7 +203,6 @@
         }
 
         function animate() {
-            console.log("waiting for strum = ", waiting_for_strum)
 
             // draw all the blocks
             if (pause == true) {
@@ -212,7 +212,7 @@
             const image = new Image();
             
             // image from https://bassplayercenter.com/learn-notes-on-the-bass-guitar/
-            image.src = 'https://bassplayercenter.com/wp-content/uploads/2019/10/All-notes-on-bass-horiz.png';
+            image.src = 'getBassGuitarImage';
             ctx.drawImage(image, 0, 200);
 
             // Loop through all rectangles
@@ -263,13 +263,11 @@
             currentTrack = $('#options').val();
             mode = $('input[name="mode"]:checked').val();
 
-            playSpeed = speed / 5
-
-            fetch('/getActiveFile?speed=' + 5 + "&track=" + currentTrack)
+            fetch('/getActiveFile?speed=' + speed + "&track=" + currentTrack)
                 .then(response => response.json())
                 .then(data => {
                     // Handle the response data
-                    console.log(data.notes)
+                    // console.log(data.notes)
                     playNotes(data.notes);
                 })
                 .catch(error => {

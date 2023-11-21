@@ -155,3 +155,12 @@ def shutDownNow(request):
 
    # Use subprocess.run with sudo and shell=True
    os.system(command)
+
+def getBassGuitarImage(request):
+   # Assuming your images are stored in a 'images' directory within your media root
+   image_path = "app/static/images/All-notes-on-bass-horiz.webp"
+
+   # Check if the image exists
+   with open(image_path, 'rb') as image_file:
+      response = HttpResponse(image_file.read(), content_type='image/jpeg')
+      return response
