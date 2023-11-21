@@ -6,7 +6,7 @@ RUNNING_ON_PI = False
 
 class Uart:
     def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27, restart_pin=22):
-        Initialize UART
+        # Initialize UART
         self.uart = serial.Serial(uart_port, 115200, timeout=1)
 
         # Initialize GPIO
