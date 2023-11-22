@@ -36,6 +36,7 @@ def getHome(request):
    return render(request, 'home.html', context)
 
 def addFile(request):  
+   context = {}
    if request.method == 'GET':
       return redirect(reverse('home'))
      
@@ -45,16 +46,6 @@ def addFile(request):
    # print(str(form))
    if not form.is_valid():
       return redirect(reverse('home'))
-
-   # # Get the uploaded file
-   # uploaded_file = request.FILES['file']
-
-   # # Set the file path within the static/images folder
-   # file_path = f'static/images/{uploaded_file.name}'
-
-   # # Save the file to the specified path
-   # fs = FileSystemStorage(location=settings.MEDIA_ROOT)
-   # fs.save(file_path, uploaded_file)
 
    file = MidiFile()
    file.name = form.cleaned_data['name']
@@ -128,7 +119,9 @@ def playingFile(request):
 
 def getActiveFile(request):
    speed = int(request.GET.get('speed', 1))
+   transpose = int(request.GET.get('transpose', 0))
    track = str(request.GET.get('track', ""))
+
 
    active = findactivefile()
 
@@ -138,7 +131,7 @@ def getActiveFile(request):
    file_path = "app/static/images/" + str(active.file)
 
 
-   notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, track) 
+   notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, transpose, track) 
    notes_for_teensy = app.MidiFileReader.convert_notes_to_bytes(notes_for_webapp)
 
    u.restart_song()

@@ -67,6 +67,19 @@
         <button id="closeButton" onclick="closePopup()">Close</button>
     </div>
 
+    {% if failed_to_add_file %}
+        <div id="error-message" class="error-message">
+            Failed to add file. Please check the form and try again.
+        </div>
+
+        <script>
+            // JavaScript to hide the error message after 2 seconds
+            setTimeout(function() {
+            document.getElementById('error-message').style.display = 'none';
+            }, 2000);
+        </script>
+    {% endif %}
+
     <script>
         function closePopup() {
             var popup = document.getElementById("popup-window");
@@ -87,7 +100,6 @@
 
         function startFile(filename) {
             window.location.href = '/startfile/' + filename;
-            showPopup()
         }
 
         function deleteFile(filename) {

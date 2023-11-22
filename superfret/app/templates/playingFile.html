@@ -13,25 +13,33 @@
     <h1>You are playing {{file.name}}</h1>
 
 
-        <label for="speed">Speed:</label>
-        <input type="range" id="speed" name="speed" min="1" max="10" step="1" value="5">
+    <div>
+        <label id="speedLabel">Speed: 1 </label>
+        <input id="speed" type="range" name="speed" min="1" max="10" step="1" value="5" onchange="updateSpeedInput();">
+        <br>
+    </div>
     
-        <label for="options">Select a track:</label>
-        <select id="options" name="options">
-          {% for name in tracks %}
-            <option value="{{name}}">{{name}}</option>
-          {% endfor %}
-        </select>
+    <div>
+        <label id="transposeLabel">Transpose: 0</label>
+        <input id="transpose" type="range" name="transpose" min="-24" max="24" step="1" value="0" onchange="updateTransposeInput();">
+    </div>
     
-        <label>Mode:</label>
-        <label>
-          <input type="radio" name="mode" value="training" checked> Training
-        </label>
-        <label>
-          <input type="radio" name="mode" value="performance"> Performance
-        </label>
-    
-        <button id="submit-button" onclick=submitForm()>Submit</button>
+    <label for="options">Select a track:</label>
+    <select id="options" name="options">
+        {% for name in tracks %}
+        <option value="{{name}}">{{name}}</option>
+        {% endfor %}
+    </select>
+
+    <label>Mode:</label>
+    <label>
+        <input type="radio" name="mode" value="training" checked> Training
+    </label>
+    <label>
+        <input type="radio" name="mode" value="performance"> Performance
+    </label>
+
+    <button id="submit-button" onclick=submitForm()>Submit</button>
     <br>
 
     <canvas id="myCanvas" width="1400" height="500"></canvas>
@@ -55,7 +63,7 @@
         const FretGap = 86;
         const interval = 10;
         const startPosition = 10;
-        const update_speed = 1
+        const update_speed = 1.5
         // Initialize Tone.js for sound making
         const synth = new Tone.Synth({
 			oscillator: {
@@ -257,10 +265,12 @@
         function submitForm() {
             document.getElementById('submit-button').innerText = "re-submit"
             speed = $('#speed').val();
+            transpose = $('#transpose').val();
             currentTrack = $('#options').val();
             mode = $('input[name="mode"]:checked').val();
+            console.log("speed="+speed)
 
-            fetch('/getActiveFile?speed=' + speed + "&track=" + currentTrack)
+            fetch('/getActiveFile?speed=' + speed + "&track=" + currentTrack + "&transpose=" + transpose)
                 .then(response => response.json())
                 .then(data => {
                     // Handle the response data
@@ -270,6 +280,16 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
+        }
+
+        function updateSpeedInput(speed){
+            speed = $('#speed').val();
+            document.getElementById('speedLabel').innerText = "Speed: " + (speed/5)
+        }
+
+        function updateTransposeInput(transpose){
+            transpose = $('#transpose').val();
+            document.getElementById('transposeLabel').innerText = "Transpose: " + transpose
         }
 
         // Call the function when the page loads

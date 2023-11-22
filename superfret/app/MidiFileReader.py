@@ -6,18 +6,24 @@ import pretty_midi
 
 MAX_FRET_VALUE = 14
 
-def extract_notes_from_track(track, speed):
+def extract_notes_from_track(track, speed, transpose):
     notes = []
     prevfret = 0
     prevstring = 1
+    if len(track.notes) > 0:
+        initial_start_time = (track.notes[0].start * 5 / speed)
+
     for note in track.notes:
+        note.pitch = note.pitch + transpose
         fret, string = midi_to_bass_fret_string(note, prevfret, prevstring)
         prevfret = fret
         prevstring = string
+        print("note was " + str(note.pitch) + ' now is ' + str(note.pitch + transpose))
+
         note_dict = {
             "note_value": note.pitch,
-            "start_time": (note.start * 5) / speed,
-            "end_time": (note.end * 5) / speed,
+            "start_time": (note.start * 5) / speed - initial_start_time,
+            "end_time": (note.end * 5) / speed - initial_start_time,
             "fret": fret,
             "string": string
         }
@@ -36,7 +42,7 @@ def extract_notes_from_track(track, speed):
 
     return notes
 
-def extract_notes_from_midi(midi_file_path, speed, track):
+def extract_notes_from_midi(midi_file_path, speed, transpose, track):
     with open(str(midi_file_path), 'rb') as file:
             midi_data = pretty_midi.PrettyMIDI(file)
 
@@ -51,7 +57,7 @@ def extract_notes_from_midi(midi_file_path, speed, track):
         # print("No track named 'bass' found. Selecting the last track.")
         target_track = midi_data.instruments[-1]
 
-    return extract_notes_from_track(target_track, speed)
+    return extract_notes_from_track(target_track, speed, transpose)
 
 def midi_to_bass_fret_string(midi_note, prev_fret, prev_string):
     # Define the standard tuning for a 4-string bass guitar (E1, A1, D2, G2)

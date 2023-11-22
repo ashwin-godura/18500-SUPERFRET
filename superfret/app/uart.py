@@ -43,9 +43,6 @@ class Uart:
 
             # file = Uart.remove_bytes_between_markers(file)
             # Perform UART communication (send file, for example)
-            print("len=" + str(len(file)))
-            hex_string = ' '.join([hex(byte) for byte in file])
-            print(hex_string)
 
             self.uart.write(file)
 

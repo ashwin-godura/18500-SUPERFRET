@@ -19,9 +19,21 @@ class AddFileForm(forms.Form):
     )
     # Customizes form validation for properties that apply to more
     # than one field.  Overrides the forms.Form.clean function.
-    def clean(self):
-        # Calls our parent (forms.Form) .clean function, gets a dictionary
-        # of cleaned data as a result
-        cleaned_data = super().clean()
-        return cleaned_data
+    def clean_file(self):
+        cleaned_data = super.clean()
+        file = cleaned_data.get('file')
+
+        if file:
+            # Check file type
+            file_name = file.name.lower()
+            if not file_name.endswith(('.mid', '.midi')):
+                raise forms.ValidationError('Invalid file type. Please upload a .mid or .midi file.')
+
+            # Check file size
+            max_size_kb = 100
+            max_size_bytes = max_size_kb * 1024
+            if file.size > max_size_bytes:
+                raise forms.ValidationError('File size must be no more than 100 KB.')
+
+        return file
 
