@@ -160,6 +160,8 @@ void loop() {
   while (fsm.getState() == WAIT_TO_START) {
     NUM_NOTES_FOUND = 0;
     NOTE_IDX = -1;
+    pixels.clear();
+    pixels.show();
     delay(100);
     Serial.println("Waiting to start");
   }
@@ -295,14 +297,14 @@ void loop() {
                 // TODO aggregate stats
         auto time_in_user_experience = micros() - time_entered_user_experience;
 
-        if (latest_time_to_play_note < time_in_user_experience) {  // time to move onto next note
+        if (latest_time_to_play_note <= time_in_user_experience) {  // time to move onto next note
           NOTE_IDX++;
           earliest_time_to_play_note = latest_time_to_play_note;
 
           current_note_starttime = 1e3 * notes[NOTE_IDX].startTime;   // [us]
           next_note_starttime = 1e3 * notes[NOTE_IDX + 1].startTime;  // [us]
 
-          if (NOTE_IDX < NUM_NOTES_FOUND - 1) {
+          if (NOTE_IDX < NUM_NOTES_FOUND) {
             latest_time_to_play_note = (current_note_starttime + next_note_starttime) / 2;
           }
 
@@ -322,17 +324,7 @@ void loop() {
         }
 
 
-
-
-
-        // if (latest_time_to_play_note <= micros()) {  //move onto next note
-        //   NOTE_IDX++;
-        //   earliest_time_to_play_note = latest_time_to_play_note;
-        // }
-
         NOTE_t expected_note = notes[NOTE_IDX];
-        uint8_t LED_idx = get_LEDidx_from_note(expected_note);
-
 
         sampleFrets();
         samplePick();
@@ -352,9 +344,10 @@ void loop() {
           Serial.println(" s");
         }
 
-        /*
-        bool LED_already_ON = pixels.getPixelColor(LED_idx);
-        if (current_note_starttime <= time_in_user_experience and time_in_user_experience < next_note_starttime - LED_OFF_TIME) {
+        int LED_idx;
+        if (current_note_starttime <= time_in_user_experience) {  // late portion of current note
+          LED_idx = get_LEDidx_from_note(notes[NOTE_IDX]);
+          bool LED_already_ON = pixels.getPixelColor(LED_idx);
           if (not LED_already_ON) {
             Serial.print("Turning LED ");
             Serial.print(LED_idx);
@@ -365,22 +358,37 @@ void loop() {
             Serial.println("]");
             pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(expected_note));
           }
-        } else if (next_note_starttime - LED_OFF_TIME <= time_in_user_experience and time_in_user_experience < next_note_starttime) {
-          if (LED_already_ON) {
-            Serial.print("Turning LED ");
-            Serial.print(LED_idx);
-            Serial.print(" OFF. Note ");
-            Serial.print(NOTE_IDX);
-            Serial.print(": ");
-            printNote(expected_note);
-            Serial.println("]");
-            pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
+        } else {  // early portion of current note
+          assert(1 <= NOTE_IDX);
+          LED_idx = get_LEDidx_from_note(notes[NOTE_IDX - 1]);
+          bool LED_already_ON = pixels.getPixelColor(LED_idx);
+          if (time_in_user_experience <= current_note_starttime - LED_OFF_TIME) {  // before LED OFF margin
+            if (not LED_already_ON) {
+              Serial.print("Turning LED ");
+              Serial.print(LED_idx);
+              Serial.print(" ON. Note ");
+              Serial.print(NOTE_IDX);
+              Serial.print(": ");
+              printNote(expected_note);
+              Serial.println("]");
+              pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(expected_note));
+            }
+          } else {  //  within LED OFF time margin
+            if (LED_already_ON) {
+              Serial.print("Turning LED ");
+              Serial.print(LED_idx);
+              Serial.print(" OFF. Note ");
+              Serial.print(NOTE_IDX);
+              Serial.print(": ");
+              printNote(expected_note);
+              Serial.println("]");
+              pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
+            }
           }
         }
-        */
       }
-      pixels.show();  // Send the updated pixel colors to the hardware.
     }
+    pixels.show();  // Send the updated pixel colors to the hardware.
 
     if (NOTE_IDX >= NUM_NOTES_FOUND) {
       Serial.println("Done with User Experience");
