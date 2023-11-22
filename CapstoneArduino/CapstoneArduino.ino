@@ -126,8 +126,8 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   assert(fsm.getState() == WAIT_TO_START);
-  mode = PERFORMANCE;
-  // mode = TRAINING;
+  // mode = PERFORMANCE;
+  mode = TRAINING;
 
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
