@@ -14,8 +14,10 @@
 #include <cassert>
 #include <limits.h>
 
-#define time_in_user_experience (((long long)micros()) - time_entered_user_experience)
-#define time_since_first_strum ((long long)(((long long)micros()) - time_of_first_strum))
+#define time_in_user_experience \
+  (((long long)micros()) - time_entered_user_experience)
+#define time_since_first_strum \
+  ((long long)(((long long)micros()) - time_of_first_strum))
 
 uint8_t noteFile[MAX_NOTE_FILE_SIZE];
 
@@ -42,9 +44,9 @@ void printState() {
         Serial.println("FSM state: RECEIVING_SONG");
         break;
       }
-    case WAIT_FOR_STRUM:
+    case PARSING_SONG:
       {
-        Serial.println("FSM state: WAIT_FOR_STRUM");
+        Serial.println("FSM state: PARSING_SONG");
         break;
       }
     case USER_EXPERIENCE:
@@ -127,7 +129,6 @@ void setup() {
   mode = PERFORMANCE;
   // mode = TRAINING;
 
-
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
     notePressed.fret_idx = i;
@@ -191,7 +192,7 @@ void loop() {
     }
   }
 
-  while (fsm.getState() == WAIT_FOR_STRUM) {
+  while (fsm.getState() == PARSING_SONG) {
     for (int i = 0; i < bytePosition; i++) {
       Serial.print("Note file byte ");
       Serial.print(i);
@@ -205,18 +206,21 @@ void loop() {
     // parsing the Note file
     parseNoteFile(noteFile);
     printNotes();
+    fsm.setState(USER_EXPERIENCE);
 
-    auto nextPrintTime = micros();
-    while (fsm.getState() == WAIT_FOR_STRUM) {
-      if (nextPrintTime < micros()) {
-        pixels.clear();
-        pixels.show();
-        Serial.println("Waiting for strum");
-        nextPrintTime += 100e3;
-      }
-      samplePick();
-      delay(10);
-    }
+    // auto nextPrintTime = micros();
+    // while (fsm.getState() == PARSING_SONG) {
+    //   if (nextPrintTime < micros()) {
+    //     pixels.clear();
+    //     //light up the first note
+    //     pixels.setPixelColor(get_LEDidx_from_note(notes[0]),
+    //     convert_Note_To_COLOR(notes[0])); pixels.show();
+    //     Serial.println("Waiting for strum");
+    //     nextPrintTime += 100e3;
+    //   }
+    //   samplePick();
+    //   delay(10);
+    // }
   }
 
   unsigned long long nextFretboardSampleTime = 0;       // [us]
@@ -238,14 +242,15 @@ void loop() {
     if (first_time_in_user_experience) {
       Serial.println("USER_EXPERIENCE");
       pixels.clear();  // Set all pixel colors to 'off'
-      pixels.show();   // Send the updated pixel colors to the hardware.
+      // light up the first note
+      printNote(notes[0]);
+      pixels.setPixelColor(get_LEDidx_from_note(notes[0]),
+                           convert_Note_To_COLOR(notes[0]));
+      pixels.show();  // Send the updated pixel colors to the hardware.
       nextFretboardSampleTime = micros();
       first_time_in_user_experience = false;
       time_last_LED_was_turned_off = 0;
       time_entered_user_experience = micros();
-
-      //light up the first note
-      pixels.setPixelColor(get_LEDidx_from_note(notes[0]), convert_Note_To_COLOR(notes[0]));
     }
 
     if (NOTE_IDX < NUM_NOTES_FOUND) {
@@ -306,19 +311,19 @@ void loop() {
         }
       } else {                                                     // PERFORMANCE MODE - TODO aggregate stats
         if (latest_time_to_play_note <= time_since_first_strum) {  // time to move onto next note
-          Serial.print(time_since_first_strum / 1.0e6, 3);
-          Serial.print("\t");
-          Serial.print(earliest_time_to_play_note / 1.0e6, 3);
-          Serial.print("\t");
-          Serial.print(current_note_starttime / 1.0e6, 3);
-          Serial.print(" (");
-          Serial.print(NOTE_IDX);
-          Serial.print(")\t");
-          Serial.print(latest_time_to_play_note / 1.0e6, 3);
-          Serial.print(" (");
-          Serial.print(NOTE_IDX + 1);
-          Serial.print(")\t");
-          Serial.println(next_note_starttime / 1.0e6, 3);
+          // Serial.print(time_since_first_strum / 1.0e6, 3);
+          // Serial.print("\t");
+          // Serial.print(earliest_time_to_play_note / 1.0e6, 3);
+          // Serial.print("\t");
+          // Serial.print(current_note_starttime / 1.0e6, 3);
+          // Serial.print(" (");
+          // Serial.print(NOTE_IDX);
+          // Serial.print(")\t");
+          // Serial.print(latest_time_to_play_note / 1.0e6, 3);
+          // Serial.print(" (");
+          // Serial.print(NOTE_IDX + 1);
+          // Serial.print(")\t");
+          // Serial.println(next_note_starttime / 1.0e6, 3);
 
           if (0 <= NOTE_IDX and not attempted_to_strum_note) {
             Serial.print("------ LATE. Did not attempt strumming note ");
@@ -334,7 +339,8 @@ void loop() {
           next_note_starttime = 1e3 * notes[NOTE_IDX + 1].startTime;  // [us]
 
           if (NOTE_IDX < NUM_NOTES_FOUND) {
-            latest_time_to_play_note = 0.25 * current_note_starttime + 0.75 * next_note_starttime;
+            latest_time_to_play_note =
+              0.25 * current_note_starttime + 0.75 * next_note_starttime;
           }
 
           // Serial.print(time_since_first_strum / 1.0e6, 3);
@@ -359,14 +365,15 @@ void loop() {
             LED_idx = get_LEDidx_from_note(notes[NOTE_IDX]);
             bool LED_already_ON = pixels.getPixelColor(LED_idx);
             if (not LED_already_ON) {
-              Serial.print("Turning LED ");
-              Serial.print(LED_idx);
-              Serial.print(" ON. Note ");
-              Serial.print(NOTE_IDX);
-              Serial.print(": ");
-              printNote(notes[NOTE_IDX]);
-              Serial.println("]");
-              pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(notes[NOTE_IDX - 1]));
+              // Serial.print("Turning LED ");
+              // Serial.print(LED_idx);
+              // Serial.print(" ON. Note ");
+              // Serial.print(NOTE_IDX);
+              // Serial.print(": ");
+              // printNote(notes[NOTE_IDX]);
+              // Serial.println("]");
+              pixels.setPixelColor(LED_idx,
+                                   convert_Note_To_COLOR(notes[NOTE_IDX - 1]));
             }
           } else {  // early portion of current note
             assert(1 <= NOTE_IDX);
@@ -374,79 +381,81 @@ void loop() {
             bool LED_already_ON = pixels.getPixelColor(LED_idx);
             if (0 <= time_since_first_strum and time_since_first_strum <= current_note_starttime - LED_OFF_TIME) {  // before LED OFF margin
               if (not LED_already_ON) {
-                Serial.print("Turning LED ");
-                Serial.print(LED_idx);
-                Serial.print(" ON. Note ");
-                Serial.print(NOTE_IDX);
-                Serial.print(": ");
-                printNote(notes[NOTE_IDX - 1]);
-                Serial.println("]");
-                pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(notes[NOTE_IDX - 1]));
+                // Serial.print("Turning LED ");
+                // Serial.print(LED_idx);
+                // Serial.print(" ON. Note ");
+                // Serial.print(NOTE_IDX);
+                // Serial.print(": ");
+                // printNote(notes[NOTE_IDX - 1]);
+                // Serial.println("]");
+                pixels.setPixelColor(
+                  LED_idx, convert_Note_To_COLOR(notes[NOTE_IDX - 1]));
               }
             } else {  //  within LED OFF time margin
               if (LED_already_ON) {
-                Serial.print("Turning LED ");
-                Serial.print(LED_idx);
-                Serial.print(" OFF. Note ");
-                Serial.print(NOTE_IDX);
-                Serial.print(": ");
-                printNote(notes[NOTE_IDX - 1]);
-                Serial.println("]");
+                // Serial.print("Turning LED ");
+                // Serial.print(LED_idx);
+                // Serial.print(" OFF. Note ");
+                // Serial.print(NOTE_IDX);
+                // Serial.print(": ");
+                // printNote(notes[NOTE_IDX - 1]);
+                // Serial.println("]");
                 pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
               }
             }
           }
+        }
 
-
-          sampleFrets();
-          samplePick();
-          if (strum) {
-            if (first_strum) {
-              time_of_first_strum = micros();
-              first_strum = false;
-            }
-            long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
-            bool played_note_correctly = false;
-
-            Serial.print(time_since_first_strum / 1.0e6, 3);
-            Serial.print("\t");
-            Serial.print(earliest_time_to_play_note / 1.0e6, 3);
-            Serial.print("\t");
-            Serial.print(current_note_starttime / 1.0e6, 3);
-            Serial.print(" (");
-            Serial.print(NOTE_IDX);
-            Serial.print(")\t");
-            Serial.print(latest_time_to_play_note / 1.0e6, 3);
-            Serial.print(" (");
-            Serial.print(NOTE_IDX + 1);
-            Serial.print(")\t");
-            Serial.println(next_note_starttime / 1.0e6, 3);
-
-            NOTE_t note_played = { .fret_idx = notePressed.fret_idx, .string = stringStrummed, .startTime = time_since_first_strum / 1e3 };
-            NOTE_t expected_note = notes[NOTE_IDX];
-            printNote(note_played);
-            Serial.println();
-            printNote(expected_note);
-            Serial.println();
-
-
-            if (not attempted_to_strum_note) {  // first strum
-              Serial.print("Delta: ");
-              Serial.print(delta_us / 1.0e6, 3);
-              Serial.println(" s");
-              bool strummed_correctly =
-                (stringStrummed == expected_note.string);
-              bool played_open_string =
-                (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
-              if (strummed_correctly and (notePressed == expected_note or played_open_string)) {  // move onto the next note
-                played_note_correctly = true;
-                Serial.println("Correct -------- Correct -------- Correct -------- Correct");
-              } else {
-                Serial.println("------ Incorrect ------ Incorrect ------ Incorrect ------");
-              }
-            }
-            attempted_to_strum_note = true;
+        sampleFrets();
+        samplePick();
+        if (strum) {
+          if (first_strum) {
+            time_of_first_strum = micros();
+            first_strum = false;
           }
+          long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
+          bool played_note_correctly = false;
+
+          // Serial.print(time_since_first_strum / 1.0e6, 3);
+          // Serial.print("\t");
+          // Serial.print(earliest_time_to_play_note / 1.0e6, 3);
+          // Serial.print("\t");
+          // Serial.print(current_note_starttime / 1.0e6, 3);
+          // Serial.print(" (");
+          // Serial.print(NOTE_IDX);
+          // Serial.print(")\t");
+          // Serial.print(latest_time_to_play_note / 1.0e6, 3);
+          // Serial.print(" (");
+          // Serial.print(NOTE_IDX + 1);
+          // Serial.print(")\t");
+          // Serial.println(next_note_starttime / 1.0e6, 3);
+
+          NOTE_t note_played = { .fret_idx = notePressed.fret_idx,
+                                 .string = stringStrummed,
+                                 .startTime = time_since_first_strum / 1e3 };
+          NOTE_t expected_note = notes[NOTE_IDX];
+          // printNote(note_played);
+          // Serial.println();
+          // printNote(expected_note);
+          // Serial.println();
+
+          if (not attempted_to_strum_note) {  // first strum
+            Serial.print("Delta: ");
+            Serial.print(delta_us / 1.0e6, 3);
+            Serial.println(" s");
+            bool strummed_correctly = (stringStrummed == expected_note.string);
+            bool played_open_string =
+              (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
+            if (strummed_correctly and (notePressed == expected_note or played_open_string)) {  // move onto the next note
+              played_note_correctly = true;
+              Serial.println(
+                "Correct -------- Correct -------- Correct -------- Correct");
+            } else {
+              Serial.println(
+                "------ Incorrect ------ Incorrect ------ Incorrect ------");
+            }
+          }
+          attempted_to_strum_note = true;
         }
       }
     }

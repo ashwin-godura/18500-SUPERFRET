@@ -19,17 +19,18 @@ void StateMachine::update(bool file_transmission, bool strum, bool done, bool pa
     case RECEIVING_SONG:
       {
         if (not file_transmission) {
-          nextState = WAIT_FOR_STRUM;
+          nextState = PARSING_SONG;
         }
         break;
       }
-    case WAIT_FOR_STRUM:
+    case PARSING_SONG:
       {
-        if (restart) {
-          nextState = WAIT_TO_START;
-        } else if (strum) {
-          nextState = USER_EXPERIENCE;
-        }
+        // if (restart) {
+        //   nextState = WAIT_TO_START;
+        // } else if (strum) {
+        //   nextState = USER_EXPERIENCE;
+        // }
+        nextState = USER_EXPERIENCE;
         break;
       }
     case USER_EXPERIENCE:
