@@ -7,7 +7,7 @@
 
 extern NOTE_t notes[MAX_NOTES];
 
-extern uint32_t NUM_NOTES_FOUND;
+extern int32_t NUM_NOTES_FOUND;
 
 void parseNoteFile(uint8_t *noteFile);
 

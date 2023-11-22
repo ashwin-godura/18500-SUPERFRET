@@ -6,14 +6,14 @@
 #include <cstdint>
 
 NOTE_t notes[MAX_NOTES];
-uint32_t NUM_NOTES_FOUND = 0;
+int32_t NUM_NOTES_FOUND = 0;
 
 uint32_t parse_uint32_t(uint8_t *buff) {
-  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) |
-         (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
+  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) | (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
 }
 
 void parseNoteFile(uint8_t *noteFile) {
+  NUM_NOTES_FOUND = 0;
   uint32_t file_length = parse_uint32_t(&noteFile[0]);
   for (int i = 4; i < file_length; i++) {
     notes[NUM_NOTES_FOUND].startTime = parse_uint32_t(&noteFile[i]);
@@ -25,7 +25,8 @@ void parseNoteFile(uint8_t *noteFile) {
     notes[NUM_NOTES_FOUND].string = convert_string_idx_to_STRING(string_idx);
     NUM_NOTES_FOUND++;
   }
-  NUM_NOTES_FOUND--; // ignore last dummy note
+  NUM_NOTES_FOUND--;  // ignore last dummy note
+  assert(notes[0].startTime == 0.0);
 }
 
 void printNote(const NOTE_t &note) {

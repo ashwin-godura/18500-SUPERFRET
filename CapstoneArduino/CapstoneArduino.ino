@@ -25,7 +25,7 @@ USER_MODE mode;
 double uS_per_tick;
 
 StateMachine fsm;
-int NOTE_IDX = 0;
+int NOTE_IDX = -1;
 void printState() {
   switch (fsm.getState()) {
     case WAIT_TO_START:
@@ -159,7 +159,7 @@ void loop() {
 
   while (fsm.getState() == WAIT_TO_START) {
     NUM_NOTES_FOUND = 0;
-    NOTE_IDX = 0;
+    NOTE_IDX = -1;
     delay(100);
     Serial.println("Waiting to start");
   }
@@ -213,10 +213,17 @@ void loop() {
     }
   }
 
-  unsigned long long nextFretboardSampleTime = 0;
+  unsigned long long nextFretboardSampleTime = 0;  // [us]
   bool first_time_in_user_experience = true;
-  unsigned long long time_last_LED_was_turned_off = 0;
-  unsigned long long time_entered_user_experience = 0;
+  unsigned long long time_last_LED_was_turned_off = 0;  // [us]
+  unsigned long long time_entered_user_experience = 0;  // [us]
+
+  unsigned long long earliest_time_to_play_note = 0;  // [us]
+  unsigned long long latest_time_to_play_note = 0;    // [us]
+
+  unsigned long long current_note_starttime = 0;  // [us]
+  unsigned long long next_note_starttime = 0;     // [us]
+
   while (fsm.getState() == USER_EXPERIENCE) {
     if (first_time_in_user_experience) {
       Serial.println("USER_EXPERIENCE");
@@ -229,9 +236,11 @@ void loop() {
     }
 
     if (NOTE_IDX < NUM_NOTES_FOUND) {
-      NOTE_t expected_note = notes[NOTE_IDX];
-      uint8_t LED_idx = get_LEDidx_from_note(expected_note);
       if (mode == TRAINING) {
+        NOTE_IDX = max(0, NOTE_IDX);  // don't let note_idx be negative
+        NOTE_t expected_note = notes[NOTE_IDX];
+        uint8_t LED_idx = get_LEDidx_from_note(expected_note);
+
         bool LED_already_ON = pixels.getPixelColor(LED_idx);
         bool move_onto_next_note =
           (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
@@ -285,9 +294,44 @@ void loop() {
       } else {  // PERFORMANCE MODE
                 // TODO aggregate stats
         auto time_in_user_experience = micros() - time_entered_user_experience;
-        auto current_note_starttime = 1000 * notes[NOTE_IDX].startTime;
-        auto next_note_starttime = 1000 * notes[NOTE_IDX + 1].startTime;
 
+        if (latest_time_to_play_note < time_in_user_experience) {  // time to move onto next note
+          NOTE_IDX++;
+          earliest_time_to_play_note = latest_time_to_play_note;
+
+          current_note_starttime = 1e3 * notes[NOTE_IDX].startTime;   // [us]
+          next_note_starttime = 1e3 * notes[NOTE_IDX + 1].startTime;  // [us]
+
+          if (NOTE_IDX < NUM_NOTES_FOUND - 1) {
+            latest_time_to_play_note = (current_note_starttime + next_note_starttime) / 2;
+          }
+
+          Serial.print(time_in_user_experience / 1.0e6, 3);
+          Serial.print("\t");
+          Serial.print(earliest_time_to_play_note / 1.0e6, 3);
+          Serial.print("\t");
+          Serial.print(current_note_starttime / 1.0e6, 3);
+          Serial.print(" (");
+          Serial.print(NOTE_IDX);
+          Serial.print(")\t");
+          Serial.print(latest_time_to_play_note / 1.0e6, 3);
+          Serial.print(" (");
+          Serial.print(NOTE_IDX + 1);
+          Serial.print(")\t");
+          Serial.println(next_note_starttime / 1.0e6, 3);
+        }
+
+
+
+
+
+        // if (latest_time_to_play_note <= micros()) {  //move onto next note
+        //   NOTE_IDX++;
+        //   earliest_time_to_play_note = latest_time_to_play_note;
+        // }
+
+        NOTE_t expected_note = notes[NOTE_IDX];
+        uint8_t LED_idx = get_LEDidx_from_note(expected_note);
 
 
         sampleFrets();
@@ -308,7 +352,7 @@ void loop() {
           Serial.println(" s");
         }
 
-        assert(current_note_starttime <= time_in_user_experience);
+        /*
         bool LED_already_ON = pixels.getPixelColor(LED_idx);
         if (current_note_starttime <= time_in_user_experience and time_in_user_experience < next_note_starttime - LED_OFF_TIME) {
           if (not LED_already_ON) {
@@ -332,9 +376,8 @@ void loop() {
             Serial.println("]");
             pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
           }
-        } else {
-          NOTE_IDX++;
         }
+        */
       }
       pixels.show();  // Send the updated pixel colors to the hardware.
     }
