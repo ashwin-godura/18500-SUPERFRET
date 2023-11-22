@@ -203,11 +203,6 @@
         }
 
         function animate() {
-
-            // draw all the blocks
-            if (pause == true) {
-                return
-            }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const image = new Image();
             
@@ -238,7 +233,9 @@
                     }
                 }
                 else {
-                    rect.y += update_speed; // Update the position
+                    if (pause == false) {
+                        rect.y += update_speed; // Update the position
+                    }
                 }
             }
         }

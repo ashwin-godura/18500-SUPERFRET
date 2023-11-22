@@ -1,6 +1,6 @@
-# import RPi.GPIO as GPIO
-# import serial
-# import time
+import RPi.GPIO as GPIO
+import serial
+import time
 
 RUNNING_ON_PI = False
 
