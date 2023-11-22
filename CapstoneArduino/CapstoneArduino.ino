@@ -122,6 +122,19 @@ void setup() {
   assert(fsm.getState() == WAIT_TO_START);
   mode = PERFORMANCE;
   // mode = TRAINING;
+
+
+  pixels.clear();
+  for (int i = 0; i < NUM_FRETS; i++) {
+    notePlayed.fret_idx = i;
+    for (int s = 0; s < 4; s++) {
+      notePlayed.string = convert_string_idx_to_STRING(s);
+      uint8_t LED_idx = get_LEDidx_from_note(notePlayed);
+      pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(notePlayed));
+    }
+    delay(100);
+    pixels.show();
+  }
 }
 
 unsigned long nextBuzzerTime = 0;
@@ -147,9 +160,6 @@ void loop() {
   while (fsm.getState() == WAIT_TO_START) {
     NUM_NOTES_FOUND = 0;
     NOTE_IDX = 0;
-    pixels.clear();  // Set all pixel colors to 'off'
-    pixels.show();   // Send the updated pixel colors to the hardware.
-
     delay(100);
     Serial.println("Waiting to start");
   }
