@@ -29,15 +29,15 @@ void loadShiftRegister() {
   delayMicroseconds(DIGITAL_DELAY);
 }
 
-NOTE_t notePlayed;
+NOTE_t notePressed;
 void sampleFrets() {
   clearShiftRegister();
   // Serial.println("Cleared");
   loadShiftRegister();
   // Serial.println("Loaded");
   bool alreadySensedContact = false;
-  notePlayed.fret_idx = 0;
-  notePlayed.string = None;
+  notePressed.fret_idx = 0;
+  notePressed.string = None;
   for (int fret = NUM_FRETS - 1; fret >= 0; fret--) {
     bool sensedContact = digitalRead(E_stringPin) || digitalRead(A_stringPin) ||
                          digitalRead(D_stringPin) || digitalRead(G_stringPin);
@@ -56,16 +56,16 @@ void sampleFrets() {
       if (digitalRead(G_stringPin)) {
         string = G;
       }
-      notePlayed.fret_idx = fret;
-      notePlayed.string = string;
+      notePressed.fret_idx = fret;
+      notePressed.string = string;
       //   Serial.print(convert_STRING_to_string_idx(string));
       //   Serial.print("\t");
       //   Serial.print(fret);
       //   Serial.print("\t");
-      //   Serial.println(notePlayed, HEX);
+      //   Serial.println(notePressed, HEX);
       alreadySensedContact = true;
     } else {
-      // Serial.println(notePlayed, HEX);
+      // Serial.println(notePressed, HEX);
     }
     digitalWrite(fretClockPin, LOW);
     delayMicroseconds(DIGITAL_DELAY);
@@ -124,11 +124,11 @@ void samplePick() {
       MIN_TIME_BETWEEN_STRUMS < (micros() - timeOfLastStrum)) {
     stringStrummed = prevString;
     Serial.println("Strummed");
-    Serial.print(prevString);
-    Serial.print("\t");
-    Serial.print(stringStrummed);
-    Serial.print("\t");
-    Serial.println(currString);
+    // Serial.print(prevString);
+    // Serial.print("\t");
+    // Serial.print(stringStrummed);
+    // Serial.print("\t");
+    // Serial.println(currString);
     strum = true;
     fsm.update(false, true, false, false, false);
     timeOfLastStrum = micros();

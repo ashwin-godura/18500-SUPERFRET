@@ -8,7 +8,7 @@
 void clearShiftRegister();
 void loadShiftRegister();
 
-extern NOTE_t notePlayed;
+extern NOTE_t notePressed;
 void sampleFrets();
 
 extern StateMachine fsm;
