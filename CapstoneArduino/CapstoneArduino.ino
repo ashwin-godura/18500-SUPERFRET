@@ -373,7 +373,7 @@ void loop() {
               // printNote(notes[NOTE_IDX]);
               // Serial.println("]");
               pixels.setPixelColor(LED_idx,
-                                   convert_Note_To_COLOR(notes[NOTE_IDX - 1]));
+                                   convert_Note_To_COLOR(notes[NOTE_IDX]));
             }
           } else {  // early portion of current note
             assert(1 <= NOTE_IDX);
