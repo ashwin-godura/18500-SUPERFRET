@@ -203,6 +203,8 @@ void loop() {
     auto nextPrintTime = micros();
     while (fsm.getState() == WAIT_FOR_STRUM) {
       if (nextPrintTime < micros()) {
+        pixels.clear();
+        pixels.show();
         Serial.println("Waiting for strum");
         nextPrintTime += 100e3;
       }
@@ -282,12 +284,16 @@ void loop() {
         }
       } else {  // PERFORMANCE MODE
                 // TODO aggregate stats
+        auto time_in_user_experience = micros() - time_entered_user_experience;
+        auto current_note_starttime = 1000 * notes[NOTE_IDX].startTime;
+        auto next_note_starttime = 1000 * notes[NOTE_IDX + 1].startTime;
 
 
 
         sampleFrets();
         samplePick();
         if (strum) {
+          int delta_ms = ((signed long)time_in_user_experience - (signed long)current_note_starttime) / 1000;
           bool strummed_correctly =
             (strum and (stringStrummed == expected_note.string));
           bool played_open_string =
@@ -297,11 +303,11 @@ void loop() {
           } else {
             Serial.println("------ Incorrect ------ Incorrect ------ Incorrect ------");
           }
+          Serial.print("Delta: ");
+          Serial.print(delta_ms / 1000.0);
+          Serial.println(" s");
         }
 
-        auto current_note_starttime = 1000 * notes[NOTE_IDX].startTime;
-        auto next_note_starttime = 1000 * notes[NOTE_IDX + 1].startTime;
-        auto time_in_user_experience = micros() - time_entered_user_experience;
         assert(current_note_starttime <= time_in_user_experience);
         bool LED_already_ON = pixels.getPixelColor(LED_idx);
         if (current_note_starttime <= time_in_user_experience and time_in_user_experience < next_note_starttime - LED_OFF_TIME) {
