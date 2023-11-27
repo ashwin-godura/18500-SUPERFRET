@@ -126,8 +126,8 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   assert(fsm.getState() == WAIT_TO_START);
-  // mode = PERFORMANCE;
-  mode = TRAINING;
+  mode = PERFORMANCE;
+  // mode = TRAINING;
 
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
@@ -137,9 +137,22 @@ void setup() {
       uint8_t LED_idx = get_LEDidx_from_note(notePressed);
       pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(notePressed));
     }
-    delay(100);
     pixels.show();
+    delay(50);
   }
+
+
+
+  // Serial.print("int\t");
+  // Serial.println(sizeof(int));
+  // Serial.print("long\t");
+  // Serial.println(sizeof(long));
+  // Serial.print("unsigned long\t");
+  // Serial.println(sizeof(unsigned long));
+  // Serial.print("signed long\t");
+  // Serial.println(sizeof(signed long));
+  // Serial.print("long long\t");
+  // Serial.println(sizeof(long long));
 }
 
 unsigned long nextBuzzerTime = 0;
@@ -165,9 +178,14 @@ void loop() {
   while (fsm.getState() == WAIT_TO_START) {
     NUM_NOTES_FOUND = 0;
     NOTE_IDX = -1;
+
     pixels.clear();
-    pixels.show();
     delay(100);
+    for (int i = 0; i < NUMPIXELS; i++) {
+      pixels.setPixelColor(i, pixels.Color(50, 10, 0));
+    }
+    pixels.show();
+
     Serial.println("Waiting to start");
   }
 
@@ -414,6 +432,7 @@ void loop() {
             first_strum = false;
           }
           long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
+
           bool played_note_correctly = false;
 
           // Serial.print(time_since_first_strum / 1.0e6, 3);
@@ -454,7 +473,11 @@ void loop() {
               Serial.println(
                 "------ Incorrect ------ Incorrect ------ Incorrect ------");
             }
+            int delta_ms = delta_us / 1000;
+            int feedback = (delta_ms & ~0x1) | played_note_correctly;
+            HWSERIAL.write(feedback);
           }
+
           attempted_to_strum_note = true;
         }
       }

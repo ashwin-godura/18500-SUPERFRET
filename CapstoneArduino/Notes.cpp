@@ -46,13 +46,13 @@ uint8_t convert_STRING_to_string_idx(STRING string) {
 uint32_t convert_Note_To_COLOR(NOTE_t note) {
   static Adafruit_NeoPixel pixels;
   if (note.string == E) {
-    return pixels.Color(255, 0, 0); // RED
+    return pixels.Color(127, 0, 0); // RED
   } else if (note.string == A) {
-    return pixels.Color(0, 0, 255); // BLUE
+    return pixels.Color(0, 0, 127); // BLUE
   } else if (note.string == D) {
-    return pixels.Color(0, 255, 0); // GREEN
+    return pixels.Color(0, 127, 0); // GREEN
   } else if (note.string == G) {
-    return pixels.Color(255, 100, 0); // YELLOW
+    return pixels.Color(127, 50, 0); // YELLOW
   } else
     return pixels.Color(0, 0, 0);
 }
