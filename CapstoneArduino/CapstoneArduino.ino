@@ -63,15 +63,24 @@ void printState() {
 }
 
 void handleFileInterrupt() {
+  Serial.println("handleFileInterrupt");
+  Serial.println(digitalRead(fileTransmissionInterruptPin));
+  printState();
   fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false,
              false);
 }
 
 void handlePauseInterrupt() {
+  Serial.println("handlePauseInterrupt");
+  Serial.println(digitalRead(pauseInterruptPin));
+  printState();
   fsm.update(false, false, false, digitalRead(pauseInterruptPin), false);
 }
 
 void handleRestartInterrupt() {
+  Serial.println("handleRestartInterrupt");
+  Serial.println(digitalRead(restartInterruptPin));
+  printState();
   fsm.update(false, false, false, false, digitalRead(restartInterruptPin));
 }
 
@@ -126,8 +135,8 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   assert(fsm.getState() == WAIT_TO_START);
-  // mode = PERFORMANCE;
-  mode = TRAINING;
+  mode = PERFORMANCE;
+  // mode = TRAINING;
 
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
@@ -140,6 +149,15 @@ void setup() {
     pixels.show();
     delay(50);
   }
+}
+
+
+void HWSerial_write_int(int32_t i) {
+  Serial.println("Wrapper");
+  HWSERIAL.write((i >> 24) & 0xff);
+  HWSERIAL.write((i >> 16) & 0xff);
+  HWSERIAL.write((i >> 8) & 0xff);
+  HWSERIAL.write(i & 0xff);
 }
 
 unsigned long nextBuzzerTime = 0;
@@ -167,13 +185,13 @@ void loop() {
     NOTE_IDX = -1;
 
     pixels.clear();
-    delay(100);
     for (int i = 0; i < NUMPIXELS; i++) {
       pixels.setPixelColor(i, pixels.Color(50, 10, 0));
     }
     pixels.show();
 
     Serial.println("Waiting to start");
+    delay(500);
   }
 
   uint32_t bytePosition = 0;
@@ -280,9 +298,9 @@ void loop() {
             pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
             time_last_LED_was_turned_off = micros();
             NOTE_IDX++;
-            HWSERIAL.println("1");
+            HWSerial_write_int(1);
           } else {
-            HWSERIAL.println("0");
+            HWSerial_write_int(0);
           }
           Serial.println("STRUMMED");
         }
@@ -296,7 +314,7 @@ void loop() {
             long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
             int delta_ms = delta_us / 1000;
             int feedback = delta_ms & ~0x1;  //lsb is 0 to indicate incorrect
-            HWSERIAL.write(feedback);
+            HWSerial_write_int(feedback);
           }
 
           attempted_to_strum_note = false;
@@ -371,7 +389,7 @@ void loop() {
             }
             int delta_ms = delta_us / 1000;
             int feedback = (delta_ms & ~0x1) | played_note_correctly;
-            HWSERIAL.write(feedback);
+            HWSerial_write_int(feedback);
           }
 
           attempted_to_strum_note = true;

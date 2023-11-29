@@ -7,9 +7,8 @@
 
 uint8_t get_LEDidx_from_note(NOTE_t note) {
   // TODO index into a look-up table
-  uint8_t LED_idx = 4 * (NUM_FRETS - note.fret_idx - 1) +
-                    convert_STRING_to_string_idx(note.string);
-  if (note.fret_idx == 0) { // open string fret is backwards
+  uint8_t LED_idx = 4 * (NUM_FRETS - note.fret_idx - 1) + convert_STRING_to_string_idx(note.string);
+  if (note.fret_idx == 0) {  // open string fret is backwards
     uint16_t last_LED_idx_for_fret_0 = NUMPIXELS - 1;
     uint16_t first_LED_idx_for_fret_0 = NUMPIXELS - 4;
     LED_idx = first_LED_idx_for_fret_0 + last_LED_idx_for_fret_0 - LED_idx;
@@ -46,13 +45,13 @@ uint8_t convert_STRING_to_string_idx(STRING string) {
 uint32_t convert_Note_To_COLOR(NOTE_t note) {
   static Adafruit_NeoPixel pixels;
   if (note.string == E) {
-    return pixels.Color(127, 0, 0); // RED
+    return pixels.Color(127, 0, 0);  // RED
   } else if (note.string == A) {
-    return pixels.Color(0, 0, 127); // BLUE
+    return pixels.Color(0, 0, 127);  // BLUE
   } else if (note.string == D) {
-    return pixels.Color(0, 127, 0); // GREEN
+    return pixels.Color(0, 127, 0);  // GREEN
   } else if (note.string == G) {
-    return pixels.Color(127, 50, 0); // YELLOW
+    return pixels.Color(127, 50, 0);  // YELLOW
   } else
     return pixels.Color(0, 0, 0);
 }
