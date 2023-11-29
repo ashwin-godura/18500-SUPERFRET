@@ -164,6 +164,7 @@ unsigned long nextBuzzerTime = 0;
 bool buzzer_state = false;
 unsigned long buzzerONtime = 100'000;   // [us]
 unsigned long buzzerOFFtime = 500'000;  // [us]
+unsigned long nextPrintTime = 0;        // [us]
 void loop() {
   //   while (1) {
   //     if (nextBuzzerTime <= micros()) {
@@ -181,17 +182,17 @@ void loop() {
   // TODO check if pi wants the system to be in TRAINING or PERFORMANCE mode
 
   while (fsm.getState() == WAIT_TO_START) {
+    if (nextPrintTime < micros()) {
+      Serial.println("Waiting to start");
+      nextPrintTime += 500e3;
+      pixels.clear();
+      for (int i = 0; i < NUMPIXELS; i++) {
+        pixels.setPixelColor(i, pixels.Color(50, 10, 0));
+      }
+      pixels.show();
+    }
     NUM_NOTES_FOUND = 0;
     NOTE_IDX = -1;
-
-    pixels.clear();
-    for (int i = 0; i < NUMPIXELS; i++) {
-      pixels.setPixelColor(i, pixels.Color(50, 10, 0));
-    }
-    pixels.show();
-
-    Serial.println("Waiting to start");
-    delay(500);
   }
 
   uint32_t bytePosition = 0;
