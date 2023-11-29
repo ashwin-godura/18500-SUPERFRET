@@ -24,8 +24,9 @@ void parseNoteFile(uint8_t *noteFile) {
     uint8_t string_idx = ((noteFile[i] & 0xF0) >> 4) - 1;
     notes[NUM_NOTES_FOUND].string = convert_string_idx_to_STRING(string_idx);
     printNote(notes[NUM_NOTES_FOUND]);
+
     Serial.println();
-    assert(notes[NUM_NOTES_FOUND].string == E || notes[NUM_NOTES_FOUND].string == A || notes[NUM_NOTES_FOUND].string == D || notes[NUM_NOTES_FOUND].string == G);
+    assert((0 <= string_idx and string_idx < 4) or string_idx == 0xE);  // string_idx == 0xE for dummy note
     NUM_NOTES_FOUND++;
   }
   NUM_NOTES_FOUND--;  // ignore last dummy note
