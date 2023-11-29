@@ -6,6 +6,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* Add more styles as needed */
+
+        #myCanvas {
+            border: 2px solid #333;
+            margin-top: 20px;
+        }
+
+        button {
+            margin-top: 10px;
+            background-color: #008CBA; /* Blue */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+    </style>
     <title>Playing File</title>
 </head>
 <body>
@@ -45,7 +77,7 @@
     <canvas id="myCanvas" width="1400" height="500"></canvas>
 
     <br>
-    <button id="close-button" onclick=stopFile()>Stop</button>
+    <button id="close-button" onclick=stopFile()>Back to Home</button>
     <button id="pause-button" onclick=pauseFile()>Pause</button>
     <!-- <button id="restart-button" onclick=restartFile()>Restart</button> -->
     <button id="delete-button" onclick=deleteBlock()>Simulate Strum</button>
@@ -63,7 +95,7 @@
         const FretGap = 86;
         const interval = 10;
         const startPosition = 10;
-        const update_speed = 1.5
+        const update_speed = 1.2
         // Initialize Tone.js for sound making
         const synth = new Tone.Synth({
 			oscillator: {
@@ -298,22 +330,22 @@
         // Function to check for strum action
         function checkStrumAction() {
             // Use AJAX to check if strum action has been triggered
-            // $.ajax({
-            //     url: '/getFeedback',  // Update with the URL of your check strum action view
-            //     method: 'GET',
-            //     success: function(data) {
-            //         if (data.valid == true) {
-            //             if (data.correct) {
-            //                 // Strum action has been triggered, simulate strum
-            //                 deleteBlock();
-            //                 // Reset the flag or perform any other necessary actions
-            //             }
-            //         }
-            //     },
-            //     error: function(error) {
-            //         console.error('Error checking strum action:', error);
-            //     }
-            // });
+            $.ajax({
+                url: '/getFeedback',  // Update with the URL of your check strum action view
+                method: 'GET',
+                success: function(data) {
+                    if (data.valid == true) {
+                        if (data.correct) {
+                            // Strum action has been triggered, simulate strum
+                            deleteBlock();
+                            // Reset the flag or perform any other necessary actions
+                        }
+                    }
+                },
+                error: function(error) {
+                    console.error('Error checking strum action:', error);
+                }
+            });
         }
 
         // Call the function when the page loads

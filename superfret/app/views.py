@@ -146,7 +146,6 @@ def getActiveFile(request):
    return JsonResponse(data)
 
 def getFeedback(request):
-
    playTime, correct = u.read_feedback() or (None, None)
 
    if playTime is None or correct is None:

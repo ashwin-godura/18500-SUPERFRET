@@ -5,19 +5,23 @@ import mido
 import pretty_midi
 
 MAX_FRET_VALUE = 14
+REPLACE_FRET_VALUE = 1
 
 def extract_notes_from_track(track, speed, transpose):
     notes = []
     prevfret = 0
     prevstring = 1
+    prevstart = float(-1)
+
     if len(track.notes) > 0:
         initial_start_time = (track.notes[0].start * 5 / speed)
 
     for note in track.notes:
         note.pitch = note.pitch + transpose
-        fret, string = midi_to_bass_fret_string(note, prevfret, prevstring)
+        fret, string = midi_to_bass_fret_string(note, prevfret, prevstring, prevstart)
         prevfret = fret
         prevstring = string
+        prevstart = note.start
 
         note_dict = {
             "note_value": note.pitch,
@@ -58,7 +62,7 @@ def extract_notes_from_midi(midi_file_path, speed, transpose, track):
 
     return extract_notes_from_track(target_track, speed, transpose)
 
-def midi_to_bass_fret_string(midi_note, prev_fret, prev_string):
+def midi_to_bass_fret_string(midi_note, prev_fret, prev_string, prev_start):
     # Define the standard tuning for a 4-string bass guitar (E1, A1, D2, G2)
     string_notes = [40, 45, 50, 55]  # MIDI notes for E1, A1, D2, G2
 
@@ -66,6 +70,15 @@ def midi_to_bass_fret_string(midi_note, prev_fret, prev_string):
     # if not then pick the same note but in the range of a bass guitar
     if not (40 <= int(midi_note.pitch) <= 55 + MAX_FRET_VALUE): 
         midi_note.pitch = (midi_note.pitch % 12) + 48
+
+    if midi_note.start - prev_start > REPLACE_FRET_VALUE:
+        print("Gap detected:")
+        print(f"Current Note Start: {midi_note.start}")
+        print(f"Previous Note Start: {prev_start}")
+        print(f"Time Gap: {midi_note.start - prev_start} seconds")
+        print("Resetting previous string to 1 and previous fret to 0")
+        prev_string = 1
+        prev_fret = 0
 
     min_distance = 1000000000
     fret_answer = -1
@@ -121,7 +134,6 @@ def get_midi_tracks(filepath):
         # Extract information about tracks
         tracks_info = []
         for i, instrument in enumerate(pretty_midi_obj.instruments):
-            print(instrument.name)
             tracks_info.append(instrument.name)
 
         return tracks_info
@@ -136,53 +148,3 @@ def get_track_by_name(midi_data, track_name):
         if instrument.name == track_name:
             return instrument
     return None
-    
-# def process_midi_for_teensy(midi_file_path, speed_factor, selected_track):
-
-#     # instead send byte array first four bytes is start time in millis, next byte is packed fret and string
-#     try:
-#         # Load the MIDI file using pretty_midi
-#         with open(str(midi_file_path), 'rb') as file:
-#             midi_data = pretty_midi.PrettyMIDI(file)
-
-#         print("file=" + str(midi_file_path))
-#         midi_bytes_buffer = io.BytesIO()
-#         midi_data.write(midi_bytes_buffer)
-#         midi_bytes = midi_bytes_buffer.getvalue()
-#         midi_bytes_buffer.close()
-
-#         print("len=" + str(len(midi_bytes)))
-#         hex_string = ' '.join([hex(byte) for byte in midi_bytes])
-#         print(hex_string)
-        
-#         # Adjust the tempo by the speed factor
-#         #  midi_data.adjust_times(speed_factor)
-
-#         # Select the specified track
-#         selected_instrument = get_track_by_name(midi_data, selected_track)
-#         if selected_instrument is None:
-#             selected_instrument = midi_data.instruments[-1]
-
-#         # Create a new PrettyMIDI object with only the selected track
-#         new_midi_data = pretty_midi.PrettyMIDI()
-#         new_midi_data.instruments.append(selected_instrument)
-        
-#         # prevfret = 0
-#         # prevstring = 1
-#         # for note in selected_instrument.notes:
-#         #     # Modify the pitch attribute (replace 60 with the desired new pitch value)
-#         #     prevfret, prevstring = midi_to_bass_fret_string(note, prevfret, prevstring)
-#         #     # print("prevfret {} prevstring {} makes {}".format(prevfret, prevstring, ((prevstring << 4) + prevfret)))
-#         #     note.pitch = (prevstring << 4) + prevfret
-
-#         # Convert the PrettyMIDI object to bytes
-#         midi_bytes_buffer = io.BytesIO()
-#         new_midi_data.write(midi_bytes_buffer)
-#         midi_bytes = midi_bytes_buffer.getvalue()
-#         midi_bytes_buffer.close()
-        
-#         return midi_bytes
-
-#     except Exception as e:
-#         print(f"Error: {e}")
-#         return None

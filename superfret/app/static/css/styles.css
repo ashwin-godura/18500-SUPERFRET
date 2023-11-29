@@ -1,53 +1,40 @@
 /* Reset some default styles */
-body, h1, h2, ul, li, p {
+body, h1, h2, ul, p, button {
     margin: 0;
     padding: 0;
 }
 
-/* Apply a background color and set font styles */
 body {
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
+    background-color: #f2f2f2;
 }
 
 header {
     background-color: #333;
     color: #fff;
     text-align: center;
-    padding: 20px 0;
-}
-
-header h1 {
-    font-size: 36px;
+    padding: 1em;
 }
 
 main {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
+    margin: 20px;
 }
 
 section {
     background-color: #fff;
-    padding: 20px;
+    border: 1px solid #ddd;
     border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    flex: 1;
-    margin: 0 10px;
-}
-
-h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
+    padding: 15px;
+    width: 45%;
 }
 
 input[type="text"] {
-    width: 93.5%;
-    padding: 10px;
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
     margin-bottom: 10px;
-    margin-left: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
 }
 
 ul {
@@ -55,29 +42,59 @@ ul {
 }
 
 li {
-    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
 }
 
-footer {
+span {
+    flex-grow: 1;
+}
+
+#start-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    padding: 8px 16px;
     text-align: center;
-    margin-top: 20px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
 }
 
-button {
-    background-color: #333;
-    color: #fff;
+#delete-button {
+    background-color: #f44336; /* Red */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#addFileButton, #shutDownButton {
+    background-color: #2196F3;
+    color: white;
     border: none;
     padding: 10px 20px;
-    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    margin-left: 22px;
+    font-size: 16px;
     cursor: pointer;
-    margin-right: 10px;
+    border-radius: 4px;
 }
 
-#addFileButton {
-    margin-left: 30px;
-}
-
-/* Style the modal for adding MIDI files */
+/* Modal styles */
 .modal {
     display: none;
     position: fixed;
@@ -86,90 +103,62 @@ button {
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.5);
-    z-index: 1;
-    justify-content: center;
-    align-items: center;
 }
 
 .modal-content {
     background-color: #fff;
+    margin: 10% auto;
     padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    position: relative;
+    border: 1px solid #888;
+    width: 80%;
 }
 
 .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
     cursor: pointer;
 }
 
-/* Style the file input and submit button inside the modal */
-form input[type="file"] {
-    margin-bottom: 10px;
-}
-
-form button[type="submit"] {
-    background-color: #333;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
+/* Popup window styles */
+#error-message {
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
     border-radius: 5px;
-    cursor: pointer;
+    margin: 10px 0;
+    text-align: center;
 }
 
 #popup-window {
+    display: none;
     position: fixed;
-    width: 300px;
-    height: 200px;
-    background: white;
-    border: 1px solid black;
-    padding: 10px;
-    margin: auto;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 10;
-    display: block;
-}    
-  
-#start-button{
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-
-}
-
-#staticList li {
-    list-style-type: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
     border: 1px solid #ddd;
-    padding: 10px;
-    margin: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    text-align: center;
 }
 
-#delete-button{
-    background-color: #e01010;
+#popup-window button {
+    background-color: #f44336;
     color: white;
     border: none;
-    padding: 5px 10px;
+    padding: 10px 20px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: 10px;
     cursor: pointer;
+    border-radius: 4px;
 }

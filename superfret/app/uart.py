@@ -1,17 +1,12 @@
 import RPi.GPIO as GPIO
 import serial
 import time
-import RPi.GPIO as GPIO
-import serial
-import time
 
 RUNNING_ON_PI = False
 
 class Uart:
     def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27, restart_pin=22):
-        # Initialize UART
-        self.uart = serial.Serial(uart_port, 115200, timeout=1)
-        # Initialize UART
+        # # Initialize UART
         self.uart = serial.Serial(uart_port, 115200, timeout=1)
 
         # Initialize GPIO
@@ -19,20 +14,7 @@ class Uart:
         self.stop_pin = stop_pin
         self.pause_pin = pause_pin
         self.restart_pin = restart_pin
-        # Initialize GPIO
-        self.start_pin = start_pin
-        self.stop_pin = stop_pin
-        self.pause_pin = pause_pin
-        self.restart_pin = restart_pin
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.start_pin, GPIO.OUT)
-        GPIO.setup(self.stop_pin, GPIO.OUT)
-        GPIO.setup(self.pause_pin, GPIO.OUT)
-        GPIO.setup(self.restart_pin, GPIO.OUT)
-        self.set_gpio_low(self.start_pin)
-        self.set_gpio_low(self.stop_pin)
-        self.set_gpio_low(self.pause_pin)
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.start_pin, GPIO.OUT)
         GPIO.setup(self.stop_pin, GPIO.OUT)
@@ -45,11 +27,7 @@ class Uart:
 
     def set_gpio_high(self, pin):
         GPIO.output(pin, GPIO.HIGH)
-    def set_gpio_high(self, pin):
-        GPIO.output(pin, GPIO.HIGH)
 
-    def set_gpio_low(self, pin):
-        GPIO.output(pin, GPIO.LOW)
     def set_gpio_low(self, pin):
         GPIO.output(pin, GPIO.LOW)
 
@@ -62,16 +40,10 @@ class Uart:
             # print("len=" + str(len(file)))
             # hex_string = ' '.join([hex(byte) for byte in file])
             # print(hex_string)
-            # print("len=" + str(len(file)))
-            # hex_string = ' '.join([hex(byte) for byte in file])
-            # print(hex_string)
 
             # file = Uart.remove_bytes_between_markers(file)
             # Perform UART communication (send file, for example)
-            # file = Uart.remove_bytes_between_markers(file)
-            # Perform UART communication (send file, for example)
 
-            self.uart.write(file)
             self.uart.write(file)
 
             time.sleep(0.5)  # Briefly set GPIO pin high
@@ -80,16 +52,12 @@ class Uart:
         except Exception as e:
             self.set_gpio_low(self.start_pin)
             print(f"Error in start_song: {e}")
-        except Exception as e:
-            self.set_gpio_low(self.start_pin)
-            print(f"Error in start_song: {e}")
 
-        print("file sent")
         print("file sent")
         return
     
     def remove_bytes_between_markers(byte_array):
-        # Define the marker sequences
+        # # Define the marker sequences
         start_marker = bytes([0x4d, 0x54, 0x72, 0x6b])
         end_marker = bytes([0xff, 0x2f, 0x00])
 
@@ -104,24 +72,34 @@ class Uart:
         else:
             print("Markers not found in the byte array.")
 
-    #     return byte_array
+        return byte_array
     
     def read_feedback(self):
-        # try:
-        #     # Wait until data is available on UART
-        #     while not self.uart.in_waiting:
-        #         pass  # Block until data is available
+        try:
+            # Wait until data is available on UART
+            if not self.uart.in_waiting >= 4:
+                return None  # Block until data is available
 
-        #     # Read the data byte by byte
-        #     fret = int.from_bytes(self.uart.read(1), byteorder='big')
-        #     string = int.from_bytes(self.uart.read(1), byteorder='big')
-        #     correct = int.from_bytes(self.uart.read(1), byteorder='big')
+            # Read the data byte by byte
+            # feedback = int.from_bytes(self.uart.read(4), byteorder='big')
+            sumx = 0
+            tot = 0
 
-        #     return fret, string, correct
+            data = self.uart.read(4).hex()
+            x = int(data, 16)# Read data from the serial port
+            if x > 0x7FFFFFFF:
+                x -= 0x100000000
+            sumx += x%2
+            tot += 1
+            print(f"Received: {(x%2)} {x} {sumx / tot}")
 
-        # except Exception as e:
-        #     print(f"Error in read_packet: {e}")
-        #     return None
+            # print("feedback: ", str(feedback))
+
+            return 
+
+        except Exception as e:
+            print(f"Error in read_packet: {e}")
+            return None
         return
 
     def pause_song(self):
@@ -152,8 +130,6 @@ class Uart:
 
         except Exception as e:
             print(f"Error in pause_song: {e}")
-        except Exception as e:
-            print(f"Error in pause_song: {e}")
         return
 
     def cleanup(self):
@@ -162,19 +138,19 @@ class Uart:
         self.uart.close()
         return
 
-if __name__ == "__main__":
-    try:
-        music_controller = Uart()
+# if __name__ == "__main__":
+#     try:
+#         music_controller = Uart()
 
-        # Example: Start Song
-        music_controller.start_song()
+#         # Example: Start Song
+#         music_controller.start_song()
 
-        # Example: Stop Song
-        music_controller.stop_song()
+#         # Example: Stop Song
+#         music_controller.stop_song()
 
-        # Example: Pause Song
-        music_controller.pause_song()
+#         # Example: Pause Song
+#         music_controller.pause_song()
 
-    finally:
-        # Cleanup GPIO and UART on exit
-        music_controller.cleanup()
+#     finally:
+#         # Cleanup GPIO and UART on exit
+#         music_controller.cleanup()
