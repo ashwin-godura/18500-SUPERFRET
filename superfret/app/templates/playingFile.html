@@ -89,6 +89,7 @@
         var pause = false;
         var listening = false
         var intervalId
+        var strumIntervalId
         var mode = "training"
         var playSpeed = 1
         var currentTrack = ""
@@ -192,6 +193,7 @@
 
         function playNotes(notes) {
             clearInterval(intervalId)
+            clearInterval(strumIntervalId)
             rectangles = []
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             // draw the initial image
@@ -208,6 +210,7 @@
                 spawnBlock(note.fret, note.string, note.note_value, note.start_time / playSpeed);
             }
             intervalId = setInterval(animate, interval)
+            strumIntervalId = setInterval(checkStrumAction, 100)
         }
 
         function animate() {
@@ -292,8 +295,34 @@
             document.getElementById('transposeLabel').innerText = "Transpose: " + transpose
         }
 
+        // Function to check for strum action
+        function checkStrumAction() {
+            // Use AJAX to check if strum action has been triggered
+            // $.ajax({
+            //     url: '/getFeedback',  // Update with the URL of your check strum action view
+            //     method: 'GET',
+            //     success: function(data) {
+            //         if (data.valid == true) {
+            //             if (data.correct) {
+            //                 // Strum action has been triggered, simulate strum
+            //                 deleteBlock();
+            //                 // Reset the flag or perform any other necessary actions
+            //             }
+            //         }
+            //     },
+            //     error: function(error) {
+            //         console.error('Error checking strum action:', error);
+            //     }
+            // });
+        }
+
         // Call the function when the page loads
-        // window.onload = fetchMidi;
+        window.onload = clearIntervals;
+
+        function clearIntervals() {
+            clearInterval(intervalId)
+            clearInterval(strumIntervalId)
+        }
     </script>
 
 </body>

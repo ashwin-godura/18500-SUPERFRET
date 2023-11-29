@@ -18,7 +18,6 @@ def extract_notes_from_track(track, speed, transpose):
         fret, string = midi_to_bass_fret_string(note, prevfret, prevstring)
         prevfret = fret
         prevstring = string
-        print("note was " + str(note.pitch) + ' now is ' + str(note.pitch + transpose))
 
         note_dict = {
             "note_value": note.pitch,

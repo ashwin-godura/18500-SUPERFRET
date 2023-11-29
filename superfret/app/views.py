@@ -1,4 +1,5 @@
 from decimal import Decimal
+import threading
 import time
 from django.conf import settings
 from django.shortcuts import render
@@ -139,10 +140,50 @@ def getActiveFile(request):
    data = {
       'notes': notes_for_webapp,
    }
+   
+   threading.Thread(target=getFeedback).start
+
    return JsonResponse(data)
+
+def getFeedback(request):
+
+   playTime, correct = u.read_feedback() or (None, None)
+
+   if playTime is None or correct is None:
+      data = {
+         'valid': False,
+      }
+   else:
+      data = {
+         'playTime': playTime,
+         'correct': correct,
+         'valid': True,
+      }
+
+   return JsonResponse(data)
+
+# def getFeedback(request):
+#    print("starting get feedback")
+#    while True:
+#       layTime, correct = u.read_feedback() or (None, None)
+
 
 
 def shutDownNow(request):
+    # Render the shutdown.html template
+    response = render(request, 'shutdown.html')
+
+    # Start a separate thread to execute the shutdown command after a delay
+    shutdown_thread = threading.Thread(target=delayed_shutdown)
+    shutdown_thread.start()
+
+    # Return the response to the client
+    return response
+
+def delayed_shutdown():
+   # Wait for one second
+   time.sleep(1)
+
    # Define the command to be executed
    command = "shutdown now"
 

@@ -1,6 +1,9 @@
 import RPi.GPIO as GPIO
 import serial
 import time
+import RPi.GPIO as GPIO
+import serial
+import time
 
 RUNNING_ON_PI = False
 
@@ -8,7 +11,14 @@ class Uart:
     def __init__(self, uart_port='/dev/ttyS0', start_pin=17, stop_pin=18, pause_pin=27, restart_pin=22):
         # Initialize UART
         self.uart = serial.Serial(uart_port, 115200, timeout=1)
+        # Initialize UART
+        self.uart = serial.Serial(uart_port, 115200, timeout=1)
 
+        # Initialize GPIO
+        self.start_pin = start_pin
+        self.stop_pin = stop_pin
+        self.pause_pin = pause_pin
+        self.restart_pin = restart_pin
         # Initialize GPIO
         self.start_pin = start_pin
         self.stop_pin = stop_pin
@@ -23,11 +33,23 @@ class Uart:
         self.set_gpio_low(self.start_pin)
         self.set_gpio_low(self.stop_pin)
         self.set_gpio_low(self.pause_pin)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.start_pin, GPIO.OUT)
+        GPIO.setup(self.stop_pin, GPIO.OUT)
+        GPIO.setup(self.pause_pin, GPIO.OUT)
+        GPIO.setup(self.restart_pin, GPIO.OUT)
+        self.set_gpio_low(self.start_pin)
+        self.set_gpio_low(self.stop_pin)
+        self.set_gpio_low(self.pause_pin)
         return
 
     def set_gpio_high(self, pin):
         GPIO.output(pin, GPIO.HIGH)
+    def set_gpio_high(self, pin):
+        GPIO.output(pin, GPIO.HIGH)
 
+    def set_gpio_low(self, pin):
+        GPIO.output(pin, GPIO.LOW)
     def set_gpio_low(self, pin):
         GPIO.output(pin, GPIO.LOW)
 
@@ -40,10 +62,16 @@ class Uart:
             # print("len=" + str(len(file)))
             # hex_string = ' '.join([hex(byte) for byte in file])
             # print(hex_string)
+            # print("len=" + str(len(file)))
+            # hex_string = ' '.join([hex(byte) for byte in file])
+            # print(hex_string)
 
             # file = Uart.remove_bytes_between_markers(file)
             # Perform UART communication (send file, for example)
+            # file = Uart.remove_bytes_between_markers(file)
+            # Perform UART communication (send file, for example)
 
+            self.uart.write(file)
             self.uart.write(file)
 
             time.sleep(0.5)  # Briefly set GPIO pin high
@@ -52,7 +80,11 @@ class Uart:
         except Exception as e:
             self.set_gpio_low(self.start_pin)
             print(f"Error in start_song: {e}")
+        except Exception as e:
+            self.set_gpio_low(self.start_pin)
+            print(f"Error in start_song: {e}")
 
+        print("file sent")
         print("file sent")
         return
     
@@ -72,24 +104,24 @@ class Uart:
         else:
             print("Markers not found in the byte array.")
 
-        return byte_array
+    #     return byte_array
     
     def read_feedback(self):
-        try:
-            # Wait until data is available on UART
-            while not self.uart.in_waiting:
-                pass  # Block until data is available
+        # try:
+        #     # Wait until data is available on UART
+        #     while not self.uart.in_waiting:
+        #         pass  # Block until data is available
 
-            # Read the data byte by byte
-            fret = int.from_bytes(self.uart.read(1), byteorder='big')
-            string = int.from_bytes(self.uart.read(1), byteorder='big')
-            correct = int.from_bytes(self.uart.read(1), byteorder='big')
+        #     # Read the data byte by byte
+        #     fret = int.from_bytes(self.uart.read(1), byteorder='big')
+        #     string = int.from_bytes(self.uart.read(1), byteorder='big')
+        #     correct = int.from_bytes(self.uart.read(1), byteorder='big')
 
-            return fret, string, correct
+        #     return fret, string, correct
 
-        except Exception as e:
-            print(f"Error in read_packet: {e}")
-            return None
+        # except Exception as e:
+        #     print(f"Error in read_packet: {e}")
+        #     return None
         return
 
     def pause_song(self):
@@ -118,6 +150,8 @@ class Uart:
             time.sleep(0.1)  # Briefly set GPIO pin high
             self.set_gpio_low(self.restart_pin)
 
+        except Exception as e:
+            print(f"Error in pause_song: {e}")
         except Exception as e:
             print(f"Error in pause_song: {e}")
         return

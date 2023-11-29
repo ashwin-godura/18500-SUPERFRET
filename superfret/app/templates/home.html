@@ -13,10 +13,10 @@
     </header>
     <main>
         <section>
-            <h2>Scales List</h2>
-            <input type="text" placeholder="Search Scale List">
-            <ul id="staticList">
-                {% for file in ScaleMidiFiles %} 
+            <h2>Songs List</h2>
+            <input type="text" id="songSearch" placeholder="Search Song List" oninput="filterList('dynamicList', 'songSearch')">
+            <ul id="dynamicList">
+                {% for file in SongMidiFiles %} 
                 <li>
                     <span>{{file.name}}</span>
                     <button id="start-button" onclick="startFile('{{file.name}}')">Start</button>
@@ -26,10 +26,10 @@
             </ul>
         </section>
         <section>
-            <h2>Songs List</h2>
-            <input type="text" id="dynamicSearch" placeholder="Search Song List">
+            <h2>Scales List</h2>
+            <input type="text" id="scaleSearch" placeholder="Search Scale List" oninput="filterList('staticList', 'scaleSearch')">
             <ul id="staticList">
-                {% for file in SongMidiFiles %} 
+                {% for file in ScaleMidiFiles %} 
                 <li>
                     <span>{{file.name}}</span>
                     <button id="start-button" onclick="startFile('{{file.name}}')">Start</button>
