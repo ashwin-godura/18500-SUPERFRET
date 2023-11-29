@@ -26,6 +26,7 @@ void parseNoteFile(uint8_t *noteFile) {
     NUM_NOTES_FOUND++;
   }
   NUM_NOTES_FOUND--;  // ignore last dummy note
+  Serial.println(notes[0].startTime);
   assert(notes[0].startTime == 0.0);
 }
 

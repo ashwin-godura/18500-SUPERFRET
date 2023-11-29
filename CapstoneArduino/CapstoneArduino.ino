@@ -126,8 +126,8 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   assert(fsm.getState() == WAIT_TO_START);
-  mode = PERFORMANCE;
-  // mode = TRAINING;
+  // mode = PERFORMANCE;
+  mode = TRAINING;
 
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
@@ -250,13 +250,6 @@ void loop() {
         bool move_onto_next_note =
           (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
         if (not LED_already_ON and move_onto_next_note) {
-          Serial.print("Turning LED ");
-          Serial.print(LED_idx);
-          Serial.print(" ON. Note ");
-          Serial.print(NOTE_IDX);
-          Serial.print(": ");
-          printNote(expected_note);
-          Serial.println("]");
           pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(expected_note));
         }
 
@@ -279,22 +272,19 @@ void loop() {
           printNote(expected_note);
           Serial.println();
         }
-
-        bool strummed_correctly =
-          (strum and (stringStrummed == expected_note.string));
-        bool played_open_string =
-          (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
-        if (strummed_correctly and (notePressed == expected_note or played_open_string)) {  // move onto the next note
-          Serial.print("Turning LED ");
-          Serial.print(LED_idx);
-          Serial.print(" OFF. Note ");
-          Serial.print(NOTE_IDX);
-          Serial.print(": ");
-          printNote(expected_note);
-          Serial.println("]");
-          pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
-          time_last_LED_was_turned_off = micros();
-          NOTE_IDX++;
+        if (strum) {
+          bool strummed_correctly = stringStrummed == expected_note.string;
+          bool played_open_string =
+            (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
+          if (strummed_correctly and (notePressed == expected_note or played_open_string)) {  // move onto the next note
+            pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
+            time_last_LED_was_turned_off = micros();
+            NOTE_IDX++;
+            HWSERIAL.println("1");
+          } else {
+            HWSERIAL.println("0");
+          }
+          Serial.println("STRUMMED");
         }
       } else {                                                     // PERFORMANCE MODE - TODO aggregate stats
         if (latest_time_to_play_note <= time_since_first_strum) {  // time to move onto next note
@@ -302,6 +292,11 @@ void loop() {
             Serial.print("------ LATE. Did not attempt strumming note ");
             Serial.print(NOTE_IDX);
             Serial.println(" LATE ------");
+
+            long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
+            int delta_ms = delta_us / 1000;
+            int feedback = delta_ms & ~0x1;  //lsb is 0 to indicate incorrect
+            HWSERIAL.write(feedback);
           }
 
           attempted_to_strum_note = false;
