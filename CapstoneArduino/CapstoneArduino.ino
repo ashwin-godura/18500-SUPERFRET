@@ -209,6 +209,10 @@ void loop() {
         noteFile[bytePosition] = incomingByte;
         bytePosition++;
       }
+      if (nextPrintTime < micros()) {
+        Serial.println("q");
+        nextPrintTime += 500e3;
+      }
     }
   }
 
