@@ -9,6 +9,7 @@
 #include "Fretboard.h"
 #include "Notes.h"
 #include "PINS.h"
+#include "Buzzer.h"
 #include "Parsing.h"
 #include "StateMachine.h"
 #include <cassert>
@@ -27,6 +28,8 @@ enum USER_MODE { TRAINING,
                  PERFORMANCE };
 
 USER_MODE mode;
+
+BUZZER_t buzzer;
 
 double uS_per_tick;
 
@@ -153,9 +156,11 @@ void setup() {
   for (int i = 255; i >= 100; i--) {
     pixels.setBrightness(i);
     pixels.show();
-    delay(10);
+    delay(8);
   }
   pixels.setBrightness(255);
+
+  buzzer = start_Buzzer(1000000, 50, 10000);  //Default buzzer setup to make Arduino compiler happy
 }
 
 
@@ -200,6 +205,7 @@ void loop() {
     }
     NUM_NOTES_FOUND = 0;
     NOTE_IDX = -1;
+    turn_off_Buzzer(buzzer);
   }
 
   uint32_t bytePosition = 0;
@@ -336,6 +342,7 @@ void loop() {
           current_note_starttime = 1e3 * notes[NOTE_IDX].startTime;   // [us]
           next_note_starttime = 1e3 * notes[NOTE_IDX + 1].startTime;  // [us]
 
+          Serial.println(next_note_starttime - current_note_starttime);
           if (NOTE_IDX < NUM_NOTES_FOUND) {
             latest_time_to_play_note =
               0.25 * current_note_starttime + 0.75 * next_note_starttime;
@@ -345,6 +352,9 @@ void loop() {
         if (not first_strum) {
           int LED_idx;
           long long time_since_first_strum_us = time_since_first_strum;
+          
+          run_Buzzer(buzzer, time_since_first_strum_us);
+          
           if (current_note_starttime <= time_since_first_strum_us) {  // late portion of current note
             LED_idx = get_LEDidx_from_note(notes[NOTE_IDX]);
             bool LED_already_ON = pixels.getPixelColor(LED_idx);
@@ -375,6 +385,9 @@ void loop() {
           if (first_strum) {
             time_of_first_strum = micros();
             first_strum = false;
+
+            buzzer = start_Buzzer(500000, BUZZER_VOLUME, BUZZER_ON_TIME); //UPDATE LINE WITH ACTUAL TIME BETWEEN NOTES AND WITH ON TIME/VOLUME
+            
           }
           long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
 

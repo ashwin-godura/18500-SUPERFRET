@@ -15,6 +15,8 @@
 #define NUM_FRETS 15                             // TODO CHANGE ME TO 15
 #define DIGITAL_DELAY 5                         // [us]
 #define LED_OFF_TIME 0.075e6                      // [us]
-#define BUZZER_VOLUME 0                         //[50-255]
+#define BUZZER_VOLUME 40                         //[50-255]
+#define BUZZER_ON_TIME 30'000 
+#define BUZZER_TIME_OFFSET 00'000               //[us] Higher means beep comes earlier
 
 #endif  // _CAPSTONE_CONSTANTS_
