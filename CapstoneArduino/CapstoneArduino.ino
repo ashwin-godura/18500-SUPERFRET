@@ -147,8 +147,15 @@ void setup() {
       pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(notePressed));
     }
     pixels.show();
-    delay(50);
+    delay(100);
   }
+  delay(2000);
+  for (int i = 255; i >= 100; i--) {
+    pixels.setBrightness(i);
+    pixels.show();
+    delay(10);
+  }
+  pixels.setBrightness(255);
 }
 
 
