@@ -20,7 +20,7 @@ class AddFileForm(forms.Form):
     # Customizes form validation for properties that apply to more
     # than one field.  Overrides the forms.Form.clean function.
     def clean_file(self):
-        cleaned_data = super.clean()
+        cleaned_data = super(AddFileForm, self).clean()
         file = cleaned_data.get('file')
 
         if file:

@@ -59,7 +59,7 @@
 
     <div>
         <label id="metronomeLabel">Metronome Volume: 5</label>
-        <input id="metronome" type="range" name="metronome" min="0" max="10" step="1" value="0" onchange="updateMetronomeInput();">
+        <input id="metronome" type="range" name="metronome" min="0" max="10" step="1" value="5" onchange="updateMetronomeInput();">
     </div>
     
     <label for="options">Select a track:</label>
@@ -307,7 +307,7 @@
             document.getElementById('submit-button').innerText = "re-submit"
             speed = $('#speed').val();
             transpose = $('#transpose').val();
-            transpose = $('#metronome').val();
+            metronome = $('#metronome').val();
             currentTrack = $('#options').val();
             mode = $('input[name="mode"]:checked').val();
             console.log("speed="+speed)
@@ -335,8 +335,8 @@
         }
 
         function updateMetronomeInput(metronome) {
-            transpose = $('#metronome').val();
-            document.getElementById('metronomeLabel').innerText = "Metronome: " + metronome
+            metronome = $('#metronome').val();
+            document.getElementById('metronomeLabel').innerText = "Metronome Volume: " + metronome
         }
 
         // Function to check for strum action
