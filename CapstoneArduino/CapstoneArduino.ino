@@ -15,7 +15,6 @@
 #include <cassert>
 #include <limits.h>
 
-
 #define time_in_user_experience                                                \
   (((long long)micros()) - time_entered_user_experience)
 #define time_since_first_strum                                                 \
@@ -25,9 +24,7 @@ uint8_t noteFile[MAX_NOTE_FILE_SIZE];
 
 Adafruit_NeoPixel pixels(NUMPIXELS, NEO_PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
-enum USER_MODE { TRAINING, PERFORMANCE };
-
-USER_MODE mode;
+NOTE_FILE_METADATA_t metadata;
 
 BUZZER_t buzzer;
 
@@ -133,8 +130,9 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   assert(fsm.getState() == WAIT_TO_START);
-  mode = PERFORMANCE;
-  // mode = TRAINING;
+
+  metadata.mode = TRAINING; // default
+  metadata.tempo_BPM = 60;  // default
 
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
@@ -217,6 +215,8 @@ void loop() {
     while (fsm.getState() == RECEIVING_SONG) {
       if (HWSERIAL.available() > 0) {
         char incomingByte = HWSERIAL.read();
+        assert(0 <= bytePosition);
+        assert(bytePosition < MAX_NOTE_FILE_SIZE);
         noteFile[bytePosition] = incomingByte;
         bytePosition++;
       }
@@ -228,6 +228,11 @@ void loop() {
   }
 
   while (fsm.getState() == PARSING_SONG) {
+    uint32_t file_length = parse_uint32_t(&noteFile[0]);
+    Serial.println(file_length);
+    Serial.println(bytePosition);
+    assert(file_length == bytePosition);
+
     for (int i = 0; i < bytePosition; i++) {
       Serial.print("Note file byte ");
       Serial.print(i);
@@ -239,7 +244,7 @@ void loop() {
 
     Serial.println("Parsing Note file");
     // parsing the Note file
-    parseNoteFile(noteFile);
+    NOTE_FILE_METADATA_t metadata = parseNoteFile(noteFile);
     printNotes();
     fsm.setState(USER_EXPERIENCE);
   }
@@ -275,7 +280,7 @@ void loop() {
     }
 
     if (NOTE_IDX < NUM_NOTES_FOUND) {
-      if (mode == TRAINING) {
+      if (metadata.mode == TRAINING) {
         NOTE_IDX = max(0, NOTE_IDX); // don't let note_idx be negative
         NOTE_t expected_note = notes[NOTE_IDX];
         uint8_t LED_idx = get_LEDidx_from_note(expected_note);
