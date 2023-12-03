@@ -21,10 +21,14 @@ NOTE_FILE_METADATA_t parseNoteFile(uint8_t *noteFile) {
   assert(file_length < MAX_NOTE_FILE_SIZE); // sanity checking
   i += 4;
   uint32_t tempo_BPM = parse_uint32_t(&noteFile[i]);
+  Serial.print("Temp BPM: ");
+  Serial.println(tempo_BPM);
   assert(0 < tempo_BPM);   // conservative bounds for sanity checking the BPM
   assert(tempo_BPM < 500); // conservative bounds for sanity checking the BPM
   i += 4;
   uint32_t mode = parse_uint32_t(&noteFile[i]);
+  Serial.print("metadata.mode: ");
+  Serial.println(mode);
   assert(mode == 0 or mode == 1);
   i += 4;
   while (i < file_length) {
