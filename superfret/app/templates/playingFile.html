@@ -54,6 +54,12 @@
     <div>
         <label id="transposeLabel">Transpose: 0</label>
         <input id="transpose" type="range" name="transpose" min="-24" max="24" step="1" value="0" onchange="updateTransposeInput();">
+        <br>
+    </div>
+
+    <div>
+        <label id="metronomeLabel">Metronome Volume: 5</label>
+        <input id="metronome" type="range" name="metronome" min="0" max="10" step="1" value="0" onchange="updateMetronomeInput();">
     </div>
     
     <label for="options">Select a track:</label>
@@ -242,7 +248,7 @@
                 spawnBlock(note.fret, note.string, note.note_value, note.start_time / playSpeed);
             }
             intervalId = setInterval(animate, interval)
-            strumIntervalId = setInterval(checkStrumAction, 100)
+            strumIntervalId = setInterval(checkStrumAction, 50)
         }
 
         function animate() {
@@ -301,11 +307,12 @@
             document.getElementById('submit-button').innerText = "re-submit"
             speed = $('#speed').val();
             transpose = $('#transpose').val();
+            transpose = $('#metronome').val();
             currentTrack = $('#options').val();
             mode = $('input[name="mode"]:checked').val();
             console.log("speed="+speed)
 
-            fetch('/getActiveFile?speed=' + speed + "&track=" + currentTrack + "&transpose=" + transpose)
+            fetch('/getActiveFile?speed=' + speed + "&track=" + currentTrack + "&transpose=" + transpose + "&mode=" + mode + "&metronome=" + metronome)
                 .then(response => response.json())
                 .then(data => {
                     // Handle the response data
@@ -319,7 +326,7 @@
 
         function updateSpeedInput(speed){
             speed = $('#speed').val();
-            document.getElementById('speedLabel').innerText = "Speed: " + (speed/5)
+            document.getElementById('speedLabel').innerText = "Speed: " + (speed/5) + "x"
         }
 
         function updateTransposeInput(transpose){
@@ -327,9 +334,15 @@
             document.getElementById('transposeLabel').innerText = "Transpose: " + transpose
         }
 
+        function updateMetronomeInput(metronome) {
+            transpose = $('#metronome').val();
+            document.getElementById('metronomeLabel').innerText = "Metronome: " + metronome
+        }
+
         // Function to check for strum action
         function checkStrumAction() {
             // Use AJAX to check if strum action has been triggered
+            var startTime = performance.now();
             $.ajax({
                 url: '/getFeedback',  // Update with the URL of your check strum action view
                 method: 'GET',
@@ -349,6 +362,11 @@
                     console.error('Error checking strum action:', error);
                 }
             });
+            var endTime = performance.now();
+
+            // Calculate the duration
+            var duration = endTime - startTime;
+            console.log("duration: " + duration)
         }
 
         // Call the function when the page loads

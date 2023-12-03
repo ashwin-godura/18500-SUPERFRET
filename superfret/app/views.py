@@ -122,6 +122,8 @@ def getActiveFile(request):
    speed = int(request.GET.get('speed', 1))
    transpose = int(request.GET.get('transpose', 0))
    track = str(request.GET.get('track', ""))
+   mode = str(request.GET.get('mode', ""))
+   metronome = int(request.GET.get('metronome', 0))
 
 
    active = findactivefile()
@@ -132,8 +134,8 @@ def getActiveFile(request):
    file_path = "app/static/images/" + str(active.file)
 
 
-   notes_for_webapp = app.MidiFileReader.extract_notes_from_midi(file_path, speed, transpose, track) 
-   notes_for_teensy = app.MidiFileReader.convert_notes_to_bytes(notes_for_webapp)
+   notes_for_webapp, tempo = app.MidiFileReader.extract_notes_from_midi(file_path, speed, transpose, track) 
+   notes_for_teensy = app.MidiFileReader.convert_notes_to_bytes(notes_for_webapp, tempo, mode, metronome)
 
    u.restart_song()
    u.start_song(notes_for_teensy)

@@ -63,7 +63,6 @@ def extract_tempo(notes):
     tempo = 60/(sum(time_dict[best]) / len(time_dict[best]))
     while tempo > 200:
         tempo = tempo/2
-    print(f"TEMPO {tempo}")
         
         
         
@@ -81,12 +80,7 @@ def extract_tempo(notes):
 def extract_notes_from_midi(midi_file_path, speed, transpose, track):
     with open(str(midi_file_path), 'rb') as file:
             midi_data = pretty_midi.PrettyMIDI(file)
-            tempo_changes = midi_data.get_tempo_changes()
-
-            # Print the tempo changes
-            print("Tempo changes:")
-            for tempo in tempo_changes:
-                print(f"Tempo: {tempo}")
+            tempo = (midi_data.get_tempo_changes()[1][0] * speed) / 5 or None
 
     target_track = None
     for idx, instrument in enumerate(midi_data.instruments):
@@ -101,8 +95,7 @@ def extract_notes_from_midi(midi_file_path, speed, transpose, track):
 
     notes = extract_notes_from_track(target_track, speed, transpose)
     t = extract_tempo(notes)
-    print(f"TEMPO: {t}")
-    return notes
+    return notes, tempo
 
 def midi_to_bass_fret_string(midi_note, prev_fret, prev_string, prev_start):
     # Define the standard tuning for a 4-string bass guitar (E1, A1, D2, G2)
@@ -114,11 +107,6 @@ def midi_to_bass_fret_string(midi_note, prev_fret, prev_string, prev_start):
         midi_note.pitch = (midi_note.pitch % 12) + 48
 
     if midi_note.start - prev_start > REPLACE_FRET_VALUE:
-        print("Gap detected:")
-        print(f"Current Note Start: {midi_note.start}")
-        print(f"Previous Note Start: {prev_start}")
-        print(f"Time Gap: {midi_note.start - prev_start} seconds")
-        print("Resetting previous string to 1 and previous fret to 0")
         prev_string = 1
         prev_fret = 0
 
@@ -143,7 +131,13 @@ def midi_to_bass_fret_string(midi_note, prev_fret, prev_string, prev_start):
 
     return fret_answer, string_answer
 
-def convert_notes_to_bytes(notes):
+def convert_notes_to_bytes(notes, tempo, mode, metronome):
+
+    if tempo is None:
+        tempo = int(extract_tempo(notes))
+    else:
+        tempo = int(tempo)
+
     byte_array = bytearray()
 
     for note in notes:
@@ -158,11 +152,21 @@ def convert_notes_to_bytes(notes):
         # Append the bytes to the result
         byte_array.extend(start_time_bytes + fret_and_string_byte)
 
-    total_length = len(byte_array) + 4
+    total_length = len(byte_array) + 12
     total_length_bytes = total_length.to_bytes(4, byteorder='big', signed=False)
+    tempo_bytes = tempo.to_bytes(4, byteorder='big', signed=False)
+    metronome_bytes = metronome.to_bytes(4, byteorder='big', signed=False)
+
+    print(f"sending file with Length: {total_length}, temo: {tempo}, and mode: {mode}")
+    if mode == "performance":
+        mode = 0
+    else:
+        mode = 1
+    mode_bytes = mode.to_bytes(4, byteorder='big', signed=False)
+
 
     # Prepend the length bytes to the byte array
-    byte_array = total_length_bytes + byte_array
+    byte_array = total_length_bytes + tempo_bytes + mode_bytes + byte_array
 
     return byte_array
 
