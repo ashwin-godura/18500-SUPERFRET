@@ -139,7 +139,7 @@ void setup() {
 
   assert(fsm.getState() == WAIT_TO_START);
   mode = PERFORMANCE;
-  // mode = TRAINING;
+  //mode = TRAINING;
 
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
@@ -152,6 +152,8 @@ void setup() {
     pixels.show();
     delay(100);
   }
+  delay(500);
+  /*
   delay(2000);
   for (int i = 255; i >= 100; i--) {
     pixels.setBrightness(i);
@@ -159,7 +161,7 @@ void setup() {
     delay(8);
   }
   pixels.setBrightness(255);
-
+  */
   buzzer = start_Buzzer(1000000, 50, 10000);  //Default buzzer setup to make Arduino compiler happy
 }
 
