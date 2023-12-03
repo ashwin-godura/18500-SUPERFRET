@@ -57,26 +57,47 @@ void printState() {
   }
 }
 
+void readPinsAndUpdateFSM() {
+  bool file_transmission = digitalRead(fileTransmissionInterruptPin);
+  bool strum = false;
+  bool done = false;
+  bool pause = digitalRead(pauseInterruptPin);
+  bool restart = digitalRead(restartInterruptPin);
+
+  Serial.print("file_transmission: ");
+  Serial.println(file_transmission);
+
+  Serial.print("strum: ");
+  Serial.println(strum);
+
+  Serial.print("done: ");
+  Serial.println(done);
+
+  Serial.print("pause: ");
+  Serial.println(pause);
+
+  Serial.print("restart: ");
+  Serial.println(restart);
+
+  fsm.update(file_transmission, strum, done, pause, restart);
+}
+
 void handleFileInterrupt() {
   Serial.println("handleFileInterrupt");
-  Serial.println(digitalRead(fileTransmissionInterruptPin));
   printState();
-  fsm.update(digitalRead(fileTransmissionInterruptPin), false, false, false,
-             false);
+  readPinsAndUpdateFSM();
 }
 
 void handlePauseInterrupt() {
   Serial.println("handlePauseInterrupt");
-  Serial.println(digitalRead(pauseInterruptPin));
   printState();
-  fsm.update(false, false, false, digitalRead(pauseInterruptPin), false);
+  readPinsAndUpdateFSM();
 }
 
 void handleRestartInterrupt() {
   Serial.println("handleRestartInterrupt");
-  Serial.println(digitalRead(restartInterruptPin));
   printState();
-  fsm.update(false, false, false, false, digitalRead(restartInterruptPin));
+  readPinsAndUpdateFSM();
 }
 
 void setup() {
@@ -244,7 +265,7 @@ void loop() {
 
     Serial.println("Parsing Note file");
     // parsing the Note file
-    NOTE_FILE_METADATA_t metadata = parseNoteFile(noteFile);
+    metadata = parseNoteFile(noteFile);
     printNotes();
     fsm.setState(USER_EXPERIENCE);
   }
@@ -397,7 +418,7 @@ void loop() {
             time_of_first_strum = micros();
             first_strum = false;
 
-            uint32 tempo_us_per_beat = 60.0e6 / (double)metadata.tempo_BPM;
+            uint32_t tempo_us_per_beat = 60.0e6 / (double)metadata.tempo_BPM;
             buzzer = start_Buzzer(
                 tempo_us_per_beat, BUZZER_VOLUME,
                 BUZZER_ON_TIME); // UPDATE LINE WITH ACTUAL TIME BETWEEN NOTES
