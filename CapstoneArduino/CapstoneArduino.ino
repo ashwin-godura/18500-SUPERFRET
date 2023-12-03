@@ -2,30 +2,30 @@
 
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
-#include <avr/power.h>  // Required for 16 MHz Adafruit Trinket
+#include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
+#include "Buzzer.h"
 #include "Constants.h"
 #include "Fretboard.h"
 #include "Notes.h"
 #include "PINS.h"
-#include "Buzzer.h"
 #include "Parsing.h"
 #include "StateMachine.h"
 #include <cassert>
 #include <limits.h>
 
-#define time_in_user_experience \
+
+#define time_in_user_experience                                                \
   (((long long)micros()) - time_entered_user_experience)
-#define time_since_first_strum \
+#define time_since_first_strum                                                 \
   ((long long)(((long long)micros()) - time_of_first_strum))
 
 uint8_t noteFile[MAX_NOTE_FILE_SIZE];
 
 Adafruit_NeoPixel pixels(NUMPIXELS, NEO_PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
-enum USER_MODE { TRAINING,
-                 PERFORMANCE };
+enum USER_MODE { TRAINING, PERFORMANCE };
 
 USER_MODE mode;
 
@@ -37,31 +37,26 @@ StateMachine fsm;
 int NOTE_IDX = -1;
 void printState() {
   switch (fsm.getState()) {
-    case WAIT_TO_START:
-      {
-        Serial.println("FSM state: WAIT_TO_START");
-        break;
-      }
-    case RECEIVING_SONG:
-      {
-        Serial.println("FSM state: RECEIVING_SONG");
-        break;
-      }
-    case PARSING_SONG:
-      {
-        Serial.println("FSM state: PARSING_SONG");
-        break;
-      }
-    case USER_EXPERIENCE:
-      {
-        Serial.println("FSM state: USER_EXPERIENCE");
-        break;
-      }
-    case PAUSED:
-      {
-        Serial.println("FSM state: PAUSED");
-        break;
-      }
+  case WAIT_TO_START: {
+    Serial.println("FSM state: WAIT_TO_START");
+    break;
+  }
+  case RECEIVING_SONG: {
+    Serial.println("FSM state: RECEIVING_SONG");
+    break;
+  }
+  case PARSING_SONG: {
+    Serial.println("FSM state: PARSING_SONG");
+    break;
+  }
+  case USER_EXPERIENCE: {
+    Serial.println("FSM state: USER_EXPERIENCE");
+    break;
+  }
+  case PAUSED: {
+    Serial.println("FSM state: PAUSED");
+    break;
+  }
   }
 }
 
@@ -88,7 +83,7 @@ void handleRestartInterrupt() {
 }
 
 void setup() {
-  pixels.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
   Serial.begin(115200);
   HWSERIAL.begin(115200);
 
@@ -139,7 +134,7 @@ void setup() {
 
   assert(fsm.getState() == WAIT_TO_START);
   mode = PERFORMANCE;
-  //mode = TRAINING;
+  // mode = TRAINING;
 
   pixels.clear();
   for (int i = 0; i < NUM_FRETS; i++) {
@@ -162,9 +157,10 @@ void setup() {
   }
   pixels.setBrightness(255);
   */
-  buzzer = start_Buzzer(1000000, 50, 10000);  //Default buzzer setup to make Arduino compiler happy
+  buzzer = start_Buzzer(
+      1000000, 50,
+      10000); // Default buzzer setup to make Arduino compiler happy
 }
-
 
 void HWSerial_write_int(int32_t i) {
   Serial.println("Wrapper");
@@ -176,9 +172,9 @@ void HWSerial_write_int(int32_t i) {
 
 unsigned long nextBuzzerTime = 0;
 bool buzzer_state = false;
-unsigned long buzzerONtime = 100'000;   // [us]
-unsigned long buzzerOFFtime = 500'000;  // [us]
-unsigned long nextPrintTime = 0;        // [us]
+unsigned long buzzerONtime = 100'000;  // [us]
+unsigned long buzzerOFFtime = 500'000; // [us]
+unsigned long nextPrintTime = 0;       // [us]
 void loop() {
   //   while (1) {
   //     if (nextBuzzerTime <= micros()) {
@@ -248,30 +244,30 @@ void loop() {
     fsm.setState(USER_EXPERIENCE);
   }
 
-  unsigned long long nextFretboardSampleTime = 0;       // [us]
-  unsigned long long time_last_LED_was_turned_off = 0;  // [us]
+  unsigned long long nextFretboardSampleTime = 0;      // [us]
+  unsigned long long time_last_LED_was_turned_off = 0; // [us]
 
   bool first_time_in_user_experience = true;
-  long long time_entered_user_experience = 0;  // [us]
+  long long time_entered_user_experience = 0; // [us]
 
   bool first_strum = true;
-  long long time_of_first_strum = LONG_MAX;  // [us]
+  long long time_of_first_strum = LONG_MAX; // [us]
 
-  long long earliest_time_to_play_note = 0;  // [us]
-  long long latest_time_to_play_note = 0;    // [us]
+  long long earliest_time_to_play_note = 0; // [us]
+  long long latest_time_to_play_note = 0;   // [us]
 
-  long long current_note_starttime = 0;  // [us]
-  long long next_note_starttime = 0;     // [us]
+  long long current_note_starttime = 0; // [us]
+  long long next_note_starttime = 0;    // [us]
   bool attempted_to_strum_note = false;
   while (fsm.getState() == USER_EXPERIENCE) {
     if (first_time_in_user_experience) {
       Serial.println("USER_EXPERIENCE");
-      pixels.clear();  // Set all pixel colors to 'off'
+      pixels.clear(); // Set all pixel colors to 'off'
       // light up the first note
       printNote(notes[0]);
       pixels.setPixelColor(get_LEDidx_from_note(notes[0]),
                            convert_Note_To_COLOR(notes[0]));
-      pixels.show();  // Send the updated pixel colors to the hardware.
+      pixels.show(); // Send the updated pixel colors to the hardware.
       nextFretboardSampleTime = micros();
       first_time_in_user_experience = false;
       time_last_LED_was_turned_off = 0;
@@ -280,13 +276,13 @@ void loop() {
 
     if (NOTE_IDX < NUM_NOTES_FOUND) {
       if (mode == TRAINING) {
-        NOTE_IDX = max(0, NOTE_IDX);  // don't let note_idx be negative
+        NOTE_IDX = max(0, NOTE_IDX); // don't let note_idx be negative
         NOTE_t expected_note = notes[NOTE_IDX];
         uint8_t LED_idx = get_LEDidx_from_note(expected_note);
 
         bool LED_already_ON = pixels.getPixelColor(LED_idx);
         bool move_onto_next_note =
-          (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
+            (time_last_LED_was_turned_off + LED_OFF_TIME < micros());
         if (not LED_already_ON and move_onto_next_note) {
           pixels.setPixelColor(LED_idx, convert_Note_To_COLOR(expected_note));
         }
@@ -313,8 +309,10 @@ void loop() {
         if (strum) {
           bool strummed_correctly = stringStrummed == expected_note.string;
           bool played_open_string =
-            (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
-          if (strummed_correctly and (notePressed == expected_note or played_open_string)) {  // move onto the next note
+              (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
+          if (strummed_correctly and
+              (notePressed == expected_note or
+               played_open_string)) { // move onto the next note
             pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
             time_last_LED_was_turned_off = micros();
             NOTE_IDX++;
@@ -324,16 +322,18 @@ void loop() {
           }
           Serial.println("STRUMMED");
         }
-      } else {                                                     // PERFORMANCE MODE - TODO aggregate stats
-        if (latest_time_to_play_note <= time_since_first_strum) {  // time to move onto next note
+      } else { // PERFORMANCE MODE - TODO aggregate stats
+        if (latest_time_to_play_note <=
+            time_since_first_strum) { // time to move onto next note
           if (0 <= NOTE_IDX and not attempted_to_strum_note) {
             Serial.print("------ LATE. Did not attempt strumming note ");
             Serial.print(NOTE_IDX);
             Serial.println(" LATE ------");
 
-            long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
+            long long delta_us = (signed long)time_since_first_strum -
+                                 (signed long)current_note_starttime;
             int delta_ms = delta_us / 1000;
-            int feedback = delta_ms & ~0x1;  //lsb is 0 to indicate incorrect
+            int feedback = delta_ms & ~0x1; // lsb is 0 to indicate incorrect
             HWSerial_write_int(feedback);
           }
 
@@ -341,39 +341,43 @@ void loop() {
           NOTE_IDX++;
           earliest_time_to_play_note = latest_time_to_play_note;
 
-          current_note_starttime = 1e3 * notes[NOTE_IDX].startTime;   // [us]
-          next_note_starttime = 1e3 * notes[NOTE_IDX + 1].startTime;  // [us]
+          current_note_starttime = 1e3 * notes[NOTE_IDX].startTime;  // [us]
+          next_note_starttime = 1e3 * notes[NOTE_IDX + 1].startTime; // [us]
 
           Serial.println(next_note_starttime - current_note_starttime);
           if (NOTE_IDX < NUM_NOTES_FOUND) {
             latest_time_to_play_note =
-              0.25 * current_note_starttime + 0.75 * next_note_starttime;
+                0.25 * current_note_starttime + 0.75 * next_note_starttime;
           }
         }
 
         if (not first_strum) {
           int LED_idx;
           long long time_since_first_strum_us = time_since_first_strum;
-          
+
           run_Buzzer(buzzer, time_since_first_strum_us);
-          
-          if (current_note_starttime <= time_since_first_strum_us) {  // late portion of current note
+
+          if (current_note_starttime <=
+              time_since_first_strum_us) { // late portion of current note
             LED_idx = get_LEDidx_from_note(notes[NOTE_IDX]);
             bool LED_already_ON = pixels.getPixelColor(LED_idx);
             if (not LED_already_ON) {
               pixels.setPixelColor(LED_idx,
                                    convert_Note_To_COLOR(notes[NOTE_IDX]));
             }
-          } else {  // early portion of current note
+          } else { // early portion of current note
             assert(1 <= NOTE_IDX);
             LED_idx = get_LEDidx_from_note(notes[NOTE_IDX - 1]);
             bool LED_already_ON = pixels.getPixelColor(LED_idx);
-            if (0 <= time_since_first_strum and time_since_first_strum <= current_note_starttime - LED_OFF_TIME) {  // before LED OFF margin
+            if (0 <= time_since_first_strum and
+                time_since_first_strum <=
+                    current_note_starttime -
+                        LED_OFF_TIME) { // before LED OFF margin
               if (not LED_already_ON) {
                 pixels.setPixelColor(
-                  LED_idx, convert_Note_To_COLOR(notes[NOTE_IDX - 1]));
+                    LED_idx, convert_Note_To_COLOR(notes[NOTE_IDX - 1]));
               }
-            } else {  //  within LED OFF time margin
+            } else { //  within LED OFF time margin
               if (LED_already_ON) {
                 pixels.setPixelColor(LED_idx, pixels.Color(0, 0, 0));
               }
@@ -388,31 +392,36 @@ void loop() {
             time_of_first_strum = micros();
             first_strum = false;
 
-            buzzer = start_Buzzer(500000, BUZZER_VOLUME, BUZZER_ON_TIME); //UPDATE LINE WITH ACTUAL TIME BETWEEN NOTES AND WITH ON TIME/VOLUME
-            
+            buzzer = start_Buzzer(
+                500000, BUZZER_VOLUME,
+                BUZZER_ON_TIME); // UPDATE LINE WITH ACTUAL TIME BETWEEN NOTES
+                                 // AND WITH ON TIME/VOLUME
           }
-          long long delta_us = (signed long)time_since_first_strum - (signed long)current_note_starttime;
+          long long delta_us = (signed long)time_since_first_strum -
+                               (signed long)current_note_starttime;
 
           bool played_note_correctly = false;
 
-          NOTE_t note_played = { .fret_idx = notePressed.fret_idx,
-                                 .string = stringStrummed,
-                                 .startTime = time_since_first_strum / 1e3 };
+          NOTE_t note_played = {.fret_idx = notePressed.fret_idx,
+                                .string = stringStrummed,
+                                .startTime = time_since_first_strum / 1e3};
           NOTE_t expected_note = notes[NOTE_IDX];
-          if (not attempted_to_strum_note) {  // first strum
+          if (not attempted_to_strum_note) { // first strum
             Serial.print("Delta: ");
             Serial.print(delta_us / 1.0e6, 3);
             Serial.println(" s");
             bool strummed_correctly = (stringStrummed == expected_note.string);
             bool played_open_string =
-              (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
-            if (strummed_correctly and (notePressed == expected_note or played_open_string)) {  // move onto the next note
+                (notePressed.fret_idx == 0 and expected_note.fret_idx == 0);
+            if (strummed_correctly and
+                (notePressed == expected_note or
+                 played_open_string)) { // move onto the next note
               played_note_correctly = true;
               Serial.println(
-                "Correct -------- Correct -------- Correct -------- Correct");
+                  "Correct -------- Correct -------- Correct -------- Correct");
             } else {
               Serial.println(
-                "------ Incorrect ------ Incorrect ------ Incorrect ------");
+                  "------ Incorrect ------ Incorrect ------ Incorrect ------");
             }
             int delta_ms = delta_us / 1000;
             int feedback = (delta_ms & ~0x1) | played_note_correctly;
@@ -423,7 +432,7 @@ void loop() {
         }
       }
     }
-    pixels.show();  // Send the updated pixel colors to the hardware.
+    pixels.show(); // Send the updated pixel colors to the hardware.
 
     if (NOTE_IDX >= NUM_NOTES_FOUND) {
       Serial.println("Done with User Experience");

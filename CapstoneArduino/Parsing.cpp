@@ -9,7 +9,8 @@ NOTE_t notes[MAX_NOTES];
 int32_t NUM_NOTES_FOUND = 0;
 
 uint32_t parse_uint32_t(uint8_t *buff) {
-  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) | (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
+  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) |
+         (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
 }
 
 void parseNoteFile(uint8_t *noteFile) {
@@ -26,10 +27,11 @@ void parseNoteFile(uint8_t *noteFile) {
     printNote(notes[NUM_NOTES_FOUND]);
 
     Serial.println();
-    assert((0 <= string_idx and string_idx < 4) or string_idx == 0xE);  // string_idx == 0xE for dummy note
+    assert((0 <= string_idx and string_idx < 4) or
+           string_idx == 0xE); // string_idx == 0xE for dummy note
     NUM_NOTES_FOUND++;
   }
-  NUM_NOTES_FOUND--;  // ignore last dummy note
+  NUM_NOTES_FOUND--; // ignore last dummy note
   Serial.println(notes[0].startTime);
   assert(notes[0].startTime == 0.0);
 }
