@@ -45,9 +45,48 @@ def extract_notes_from_track(track, speed, transpose):
 
     return notes
 
+def extract_tempo(notes):
+    time_dict = {}
+    for i in range(len(notes) - 1):
+        time = notes[i+1]["start_time"] - notes[i]["start_time"]
+        rounded = round(5*time)
+        if rounded in time_dict:
+            time_dict[rounded].append(time)
+        else:
+            time_dict[rounded]=[time]
+    best = None
+    bestCount = 0
+    for key in time_dict:
+        if len(time_dict[key]) > bestCount:
+            bestCount = len(time_dict[key])
+            best = key
+    tempo = 60/(sum(time_dict[best]) / len(time_dict[best]))
+    while tempo > 200:
+        tempo = tempo/2
+    print(f"TEMPO {tempo}")
+        
+        
+        
+    
+    
+    """
+    (options, probs) = midi_data.estimate_tempi()
+    print(options)
+    for tempo in options:
+        if tempo % 1 < .001 and tempo < 201:
+            return tempo
+    return options[0]"""
+    
+
 def extract_notes_from_midi(midi_file_path, speed, transpose, track):
     with open(str(midi_file_path), 'rb') as file:
             midi_data = pretty_midi.PrettyMIDI(file)
+            tempo_changes = midi_data.get_tempo_changes()
+
+            # Print the tempo changes
+            print("Tempo changes:")
+            for tempo in tempo_changes:
+                print(f"Tempo: {tempo}")
 
     target_track = None
     for idx, instrument in enumerate(midi_data.instruments):
@@ -60,7 +99,10 @@ def extract_notes_from_midi(midi_file_path, speed, transpose, track):
         # print("No track named 'bass' found. Selecting the last track.")
         target_track = midi_data.instruments[-1]
 
-    return extract_notes_from_track(target_track, speed, transpose)
+    notes = extract_notes_from_track(target_track, speed, transpose)
+    t = extract_tempo(notes)
+    print(f"TEMPO: {t}")
+    return notes
 
 def midi_to_bass_fret_string(midi_note, prev_fret, prev_string, prev_start):
     # Define the standard tuning for a 4-string bass guitar (E1, A1, D2, G2)

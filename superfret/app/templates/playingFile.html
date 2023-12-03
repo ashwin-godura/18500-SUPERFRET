@@ -123,7 +123,7 @@
         var intervalId
         var strumIntervalId
         var mode = "training"
-        var playSpeed = 1
+        var playSpeed = .65
         var currentTrack = ""
         var first_note_target = 0
         var waiting_for_strum = false
@@ -335,7 +335,10 @@
                 method: 'GET',
                 success: function(data) {
                     if (data.valid == true) {
-                        if (data.correct) {
+                        if (mode == "performance" && waiting_for_strum) {
+                            deleteBlock();
+                            waiting_for_strum = false
+                        } else if (data.correct && mode == "training") {
                             // Strum action has been triggered, simulate strum
                             deleteBlock();
                             // Reset the flag or perform any other necessary actions

@@ -79,23 +79,25 @@ class Uart:
             # Wait until data is available on UART
             if not self.uart.in_waiting >= 4:
                 return None  # Block until data is available
+            
+            feedbacks = []
 
             # Read the data byte by byte
             # feedback = int.from_bytes(self.uart.read(4), byteorder='big')
-            sumx = 0
-            tot = 0
+            while self.uart.in_waiting >= 4:
+                sumx = 0
+                tot = 0
 
-            data = self.uart.read(4).hex()
-            x = int(data, 16)# Read data from the serial port
-            if x > 0x7FFFFFFF:
-                x -= 0x100000000
-            sumx += x%2
-            tot += 1
-            print(f"Received: {(x%2)} {x} {sumx / tot}")
-
-            # print("feedback: ", str(feedback))
-
-            return 
+                data = self.uart.read(4).hex()
+                x = int(data, 16)# Read data from the serial port
+                if x > 0x7FFFFFFF:
+                    x -= 0x100000000
+                sumx += x%2
+                tot += 1
+                feedbacks.append({'correct': x%2, 'diff': x})
+                print(f"Received: {(x%2)} {x} {sumx / tot}")
+ 	
+            return feedbacks
 
         except Exception as e:
             print(f"Error in read_packet: {e}")

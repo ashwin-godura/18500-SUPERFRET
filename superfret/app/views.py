@@ -146,16 +146,17 @@ def getActiveFile(request):
    return JsonResponse(data)
 
 def getFeedback(request):
-   playTime, correct = u.read_feedback() or (None, None)
+   feedbacks = u.read_feedback()
 
-   if playTime is None or correct is None:
+   if feedbacks is None:
       data = {
          'valid': False,
       }
    else:
+      feedback = feedbacks[-1]
       data = {
-         'playTime': playTime,
-         'correct': correct,
+         'playTime': feedback['diff'],
+         'correct': feedback['correct'],
          'valid': True,
       }
 
