@@ -9,13 +9,29 @@ NOTE_t notes[MAX_NOTES];
 int32_t NUM_NOTES_FOUND = 0;
 
 uint32_t parse_uint32_t(uint8_t *buff) {
-  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) | (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
+  return (((uint32_t)buff[0]) << 24) | (((uint32_t)buff[1]) << 16) |
+         (((uint32_t)buff[2]) << 8) | ((uint32_t)buff[3]);
 }
 
-void parseNoteFile(uint8_t *noteFile) {
+NOTE_FILE_METADATA_t parseNoteFile(uint8_t *noteFile) {
   NUM_NOTES_FOUND = 0;
-  uint32_t file_length = parse_uint32_t(&noteFile[0]);
-  for (int i = 4; i < file_length; i++) {
+
+  int i = 0;
+  uint32_t file_length = parse_uint32_t(&noteFile[i]);
+  assert(file_length < MAX_NOTE_FILE_SIZE); // sanity checking
+  i += 4;
+  uint32_t tempo_BPM = parse_uint32_t(&noteFile[i]);
+  Serial.print("Temp BPM: ");
+  Serial.println(tempo_BPM);
+  assert(0 < tempo_BPM);   // conservative bounds for sanity checking the BPM
+  assert(tempo_BPM < 500); // conservative bounds for sanity checking the BPM
+  i += 4;
+  uint32_t mode = parse_uint32_t(&noteFile[i]);
+  Serial.print("metadata.mode: ");
+  Serial.println(mode);
+  assert(mode == 0 or mode == 1);
+  i += 4;
+  while (i < file_length) {
     notes[NUM_NOTES_FOUND].startTime = parse_uint32_t(&noteFile[i]);
     i += 4;
     notes[NUM_NOTES_FOUND].fret_idx = (noteFile[i] & 0x0F) % NUM_FRETS;
@@ -26,12 +42,19 @@ void parseNoteFile(uint8_t *noteFile) {
     printNote(notes[NUM_NOTES_FOUND]);
 
     Serial.println();
-    assert((0 <= string_idx and string_idx < 4) or string_idx == 0xE);  // string_idx == 0xE for dummy note
+    assert((0 <= string_idx and string_idx < 4) or
+           string_idx == 0xE); // string_idx == 0xE for dummy note
     NUM_NOTES_FOUND++;
+    i++;
   }
-  NUM_NOTES_FOUND--;  // ignore last dummy note
+  NUM_NOTES_FOUND--; // ignore last dummy note
   Serial.println(notes[0].startTime);
   assert(notes[0].startTime == 0.0);
+
+  NOTE_FILE_METADATA_t metadata;
+  metadata.tempo_BPM = tempo_BPM;
+  metadata.mode = mode ? TRAINING : PERFORMANCE;
+  return metadata;
 }
 
 void printNote(const NOTE_t &note) {
