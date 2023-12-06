@@ -2,21 +2,21 @@
 #define _CAPSTONE_CONSTANTS_
 
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS 60  // TODO CHANGE ME TO 56
+#define NUMPIXELS 60 // TODO CHANGE ME TO 56
 
-#define MAX_NOTE_FILE_SIZE 100'000  // [bytes]
-#define MAX_NOTES 10'000             // [notes] // TODO hold more notes?
+#define MAX_NOTE_FILE_SIZE 100'000 // [bytes]
+#define MAX_NOTES 10'000           // [notes] // TODO hold more notes?
 
 // set this to the hardware serial port you wish to use
 #define HWSERIAL Serial5
 
-#define FRETBOARD_SAMPLING_PERIOD (10 * 1.0e3)  // [us]
-#define MIN_TIME_BETWEEN_STRUMS (0.1e6)         // [us]
-#define NUM_FRETS 15                             // TODO CHANGE ME TO 15
-#define DIGITAL_DELAY 5                         // [us]
-#define LED_OFF_TIME .075e6                      // [us]
-#define BUZZER_VOLUME 100                         //[50-255]
-#define BUZZER_ON_TIME 30'000 
-#define BUZZER_TIME_OFFSET 00'000               //[us] Higher means beep comes earlier
+#define NUM_FRETS 15
+#define DIGITAL_DELAY_us 5              // [us]
+#define FRETBOARD_SAMPLING_PERIOD_ms 10 // [ms]
+#define MIN_TIME_BETWEEN_STRUMS_ms 100  // [ms]
+#define LED_OFF_TIME_ms 75              // [ms]
+#define BUZZER_VOLUME 100               // [50-255]
+#define BUZZER_ON_TIME_ms 30            // [ms]
+#define BUZZER_TIME_OFFSET_ms 0         // [ms] Higher means beep comes earlier
 
-#endif  // _CAPSTONE_CONSTANTS_
+#endif // _CAPSTONE_CONSTANTS_
