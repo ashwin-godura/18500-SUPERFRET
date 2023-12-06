@@ -9,24 +9,24 @@ void clearShiftRegister() { // clock a 0 though the shift register NUM_FRETS + 1
   digitalWrite(fretSimulusPin, LOW);
   for (int fret = 0; fret < NUM_FRETS + 1; fret++) {
     digitalWrite(fretClockPin, LOW);
-    delayMicroseconds(DIGITAL_DELAY);
+    delayMicroseconds(DIGITAL_DELAY_us);
     digitalWrite(fretClockPin, HIGH);
-    delayMicroseconds(DIGITAL_DELAY);
+    delayMicroseconds(DIGITAL_DELAY_us);
     digitalWrite(fretClockPin, LOW);
-    delayMicroseconds(DIGITAL_DELAY);
+    delayMicroseconds(DIGITAL_DELAY_us);
   }
 }
 void loadShiftRegister() {
   digitalWrite(fretSimulusPin, HIGH);
-  delayMicroseconds(DIGITAL_DELAY);
+  delayMicroseconds(DIGITAL_DELAY_us);
   digitalWrite(fretClockPin, LOW);
-  delayMicroseconds(DIGITAL_DELAY);
+  delayMicroseconds(DIGITAL_DELAY_us);
   digitalWrite(fretClockPin, HIGH);
-  delayMicroseconds(DIGITAL_DELAY);
+  delayMicroseconds(DIGITAL_DELAY_us);
   digitalWrite(fretClockPin, LOW);
-  delayMicroseconds(DIGITAL_DELAY);
+  delayMicroseconds(DIGITAL_DELAY_us);
   digitalWrite(fretSimulusPin, LOW);
-  delayMicroseconds(DIGITAL_DELAY);
+  delayMicroseconds(DIGITAL_DELAY_us);
 }
 
 NOTE_t notePressed;
@@ -68,11 +68,11 @@ void sampleFrets() {
       // Serial.println(notePressed, HEX);
     }
     digitalWrite(fretClockPin, LOW);
-    delayMicroseconds(DIGITAL_DELAY);
+    delayMicroseconds(DIGITAL_DELAY_us);
     digitalWrite(fretClockPin, HIGH);
-    delayMicroseconds(DIGITAL_DELAY);
+    delayMicroseconds(DIGITAL_DELAY_us);
     digitalWrite(fretClockPin, LOW);
-    delayMicroseconds(DIGITAL_DELAY);
+    delayMicroseconds(DIGITAL_DELAY_us);
     // Serial.println("Clocked");
   }
 }
@@ -81,7 +81,7 @@ int E_stringPin_count;
 int A_stringPin_count;
 int D_stringPin_count;
 int G_stringPin_count;
-unsigned long long timeOfLastStrum = 0;
+unsigned long long timeOfLastStrum_ms = 0;
 bool strum = false;
 STRING stringStrummed = None;
 STRING prevString = None;
@@ -95,7 +95,7 @@ void samplePick() {
   //
   pinMode(pickPin, OUTPUT);
   digitalWrite(pickPin, HIGH);
-  delayMicroseconds(DIGITAL_DELAY);
+  delayMicroseconds(DIGITAL_DELAY_us);
   for (int i = 0; i < 5; i++) {
     E_stringPin_count += digitalRead(E_stringPin);
     A_stringPin_count += digitalRead(A_stringPin);
@@ -118,10 +118,10 @@ void samplePick() {
   }
 
   stringStrummed = None;
-  
+
   bool pick_left_the_string = (prevString != None and currString == None);
   if (pick_left_the_string and
-      MIN_TIME_BETWEEN_STRUMS < (micros() - timeOfLastStrum)) {
+      MIN_TIME_BETWEEN_STRUMS_ms < (millis() - timeOfLastStrum_ms)) {
     stringStrummed = prevString;
     Serial.println("Strummed");
     // Serial.print(prevString);
@@ -131,7 +131,7 @@ void samplePick() {
     // Serial.println(currString);
     strum = true;
     fsm.update(false, true, false, false, false);
-    timeOfLastStrum = micros();
+    timeOfLastStrum_ms = millis();
   }
 
   prevString = currString;
