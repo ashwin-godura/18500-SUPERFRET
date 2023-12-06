@@ -166,7 +166,7 @@ def convert_notes_to_bytes(notes, tempo, mode, metronome):
 
 
     # Prepend the length bytes to the byte array
-    byte_array = total_length_bytes + tempo_bytes + mode_bytes + byte_array
+    byte_array = total_length_bytes + tempo_bytes + mode_bytes + metronome_bytes + byte_array
 
     return byte_array
 
