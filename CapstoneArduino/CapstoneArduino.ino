@@ -387,9 +387,9 @@ void loop() {
             time_of_first_strum_ms = millis();
             first_strum = false;
 
-            uint32_t tempo_us_per_beat = 60.0e6 / (double)metadata.tempo_BPM;
+            uint32_t tempo_ms_per_beat = 60.0e3 / (double)metadata.tempo_BPM;
             buzzer = start_Buzzer(
-              tempo_us_per_beat, BUZZER_VOLUME,
+              tempo_ms_per_beat, BUZZER_VOLUME,
               BUZZER_ON_TIME_ms);  // UPDATE LINE WITH ACTUAL TIME BETWEEN NOTES
                                    // AND WITH ON TIME/VOLUME
           }
