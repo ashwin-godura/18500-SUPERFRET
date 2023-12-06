@@ -28,6 +28,8 @@ BUZZER_t buzzer;
 
 double uS_per_tick;
 
+int waiting_brightness = 50;
+
 StateMachine fsm;
 int NOTE_IDX = -1;
 void printState() {
@@ -159,6 +161,7 @@ void setup() {
   metadata.tempo_BPM = 60;   // default
 
   pixels.clear();
+  pixels.setBrightness(50);
   for (int i = 0; i < NUM_FRETS; i++) {
     notePressed.fret_idx = i;
     for (int s = 0; s < 4; s++) {
@@ -169,7 +172,9 @@ void setup() {
     pixels.show();
     delay(100);
   }
-  delay(500);
+  pixels.show();
+  delay(1000);
+  pixels.setBrightness(255);
 
   buzzer =
     start_Buzzer(1000, 50,
@@ -194,12 +199,15 @@ void loop() {
     if (nextPrintTime_ms < millis()) {
       Serial.println("Waiting to start");
       nextPrintTime_ms += 500;
-      pixels.clear();
-      for (int i = 0; i < NUMPIXELS; i++) {
-        pixels.setPixelColor(i, pixels.Color(50, 10, 0));
-      }
-      pixels.show();
+      
     }
+    pixels.clear();
+    for (int i = 0; i < NUMPIXELS; i++) {
+      int r = sin(millis()/750.0) * 50 + 50;
+      int g = sin(millis()/750.0) * 5 + 10;
+      pixels.setPixelColor(i, pixels.Color(r, g, 0));
+    }
+    pixels.show();
     NUM_NOTES_FOUND = 0;
     NOTE_IDX = -1;
     turn_off_Buzzer(buzzer);
