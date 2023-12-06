@@ -21,27 +21,15 @@
                     <span>{{file.name}}</span>
                     <button id="start-button" onclick="startFile('{{file.name}}')">Start</button>
                     <button id="delete-button" onclick="deleteFile('{{file.name}}')">Delete</button>
+                    <button id="feedback-button" onclick="viewFeedback('{{file.name}}')">View Feedback</button>
                 </li>
                 {% endfor %}
             </ul>
-        </section>
-        <section>
-            <h2>Scales</h2>
-            <input type="text" id="scaleSearch" placeholder="Search Scale List" oninput="filterList('staticList', 'scaleSearch')">
-            <ul id="staticList">
-                {% for file in ScaleMidiFiles %} 
-                <li>
-                    <span>{{file.name}}</span>
-                    <button id="start-button" onclick="startFile('{{file.name}}')">Start</button>
-                    <button id="delete-button" onclick="deleteFile('{{file.name}}')">Delete</button>
-                </li>
-                {% endfor %}
-            </ul>
+            <br>
+            <button id="addFileButton" onclick="openAddForm()">Add a file</button>
+            <button id="shutDownButton" onclick="showPopup()">Shut it down now!</button>
         </section>
     </main>
-
-    <button id="addFileButton" onclick="openAddForm()">Add a file</button>
-    <button id="shutDownButton" onclick="showPopup()">Shut it down now!</button>
 
     <!-- Modal for adding MIDI file -->
     <div id="addFormModal" class="modal">
@@ -103,6 +91,10 @@
 
         function deleteFile(filename) {
             window.location.href = '/deletefile/' + filename;
+        }
+
+        function viewFeedback(filename) {
+            window.location.href = '/viewFeedback/' + filename;
         }
 
         function filterList(listId, inputId) {

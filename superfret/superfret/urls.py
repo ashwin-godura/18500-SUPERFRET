@@ -31,5 +31,6 @@ urlpatterns = [
     path('getActiveFile', views.getActiveFile, name='getActiveFile'),
     path('shutDownNow', views.shutDownNow, name='shutDownNow'),
     path('getFeedback', views.getFeedback, name='getFeedback'),
+    path('viewFeedback/<str:name>/', views.viewFeedback, name='viewFeedback'),
     path('getBassGuitarImage/', views.getBassGuitarImage, name='getBassGuitarImage')
 ]

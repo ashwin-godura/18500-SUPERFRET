@@ -28,7 +28,10 @@ section {
     border-radius: 5px;
     padding: 15px;
     width: 45%;
+    margin: 0 auto; /* This will center the section horizontally */
+    margin-top: 50px; /* Adjust the top margin as needed */
 }
+
 
 input[type="text"] {
     width: 100%;
@@ -81,6 +84,20 @@ span {
     border-radius: 4px;
 }
 
+#feedback-button {
+    background-color: #2196F3; /* Red */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
 #addFileButton, #shutDownButton {
     background-color: #2196F3;
     color: white;
@@ -88,7 +105,7 @@ span {
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
-    margin-left: 22px;
+    margin-left: 5px;
     font-size: 16px;
     cursor: pointer;
     border-radius: 4px;

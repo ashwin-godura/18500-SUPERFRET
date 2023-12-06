@@ -13,8 +13,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from app.forms import AddFileForm
-from app.models import MidiFile
+from app.models import MidiFile, StrumEvent
 import os
+
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
 from app.uart import Uart
 import app.MidiFileReader
@@ -130,6 +134,10 @@ def getActiveFile(request):
 
    if active is None:
       return redirect(reverse('home'))
+   
+   # Assuming 'midi_file_instance' is an instance of MidiFile
+   active.strum_events.all().delete()
+
 
    file_path = "app/static/images/" + str(active.file)
 
@@ -148,6 +156,11 @@ def getActiveFile(request):
    return JsonResponse(data)
 
 def getFeedback(request):
+   active = findactivefile()
+
+   if active is None:
+      return JsonResponse()
+
    feedbacks = u.read_feedback()
 
    if feedbacks is None:
@@ -161,13 +174,15 @@ def getFeedback(request):
          'correct': feedback['correct'],
          'valid': True,
       }
+      strum_event = StrumEvent.objects.create(
+         midi_file=active,
+         correct=feedback['correct'],  # Set your desired boolean value
+         timing=feedback['diff'],  # Set your desired float value for timing
+      )
+      strum_event.save()
+
 
    return JsonResponse(data)
-
-# def getFeedback(request):
-#    print("starting get feedback")
-#    while True:
-#       layTime, correct = u.read_feedback() or (None, None)
 
 
 
@@ -200,3 +215,59 @@ def getBassGuitarImage(request):
    with open(image_path, 'rb') as image_file:
       response = HttpResponse(image_file.read(), content_type='image/jpeg')
       return response
+   
+def viewFeedback(request, name):
+    # Get the MidiFile instance by name
+    midi_file_instance = get_object_or_404(MidiFile, name=name)
+
+    # Get all StrumEvent instances related to the MidiFile
+    strum_events = midi_file_instance.strum_events.all()
+
+    if strum_events is None or len(strum_events) == 0:
+       return redirect(reverse('home'))
+
+    # Plot 1: Timing vs StrumEvent ID for Correct StrumEvents
+    correct_events = [event for event in strum_events if event.correct]
+    plt.figure(figsize=(8, 6))
+    plt.scatter([event.id for event in correct_events], [event.timing for event in correct_events])
+    plt.xlabel('StrumEvent ID')
+    plt.ylabel('Timing')
+    plt.title('Timing vs StrumEvent ID for Correct StrumEvents')
+    plt.grid(True)
+    timing_plot_img = get_image_as_base64(plt)
+    plt.close()
+
+    # Plot 2: Total Strums vs StrumEvent ID for Correct StrumEvents
+    plt.figure(figsize=(8, 6))
+    total_strums = 0
+    y_values = []
+    for event in strum_events:
+        total_strums += 1
+        if event.correct:
+            total_strums = 0
+            y_values.append(total_strums)
+
+    x_values = range(0, len(y_values))
+    plt.plot(x_values, y_values, marker='o')
+    plt.xlabel('StrumEvent ID')
+    plt.ylabel('Total Strums to Correct')
+    plt.title('Total Strums vs StrumEvent ID for Correct StrumEvents')
+    plt.grid(True)
+    total_strums_plot_img = get_image_as_base64(plt)
+    plt.close()
+
+    # Render the HTML response
+    context = {
+        'timing_plot': timing_plot_img,
+        'total_strums_plot': total_strums_plot_img,
+    }
+    return render(request, 'feedback.html', context)
+
+
+def get_image_as_base64(plt):
+    # Convert the Matplotlib figure to base64 for embedding in HTML
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+    return f"data:image/png;base64,{image_base64}"

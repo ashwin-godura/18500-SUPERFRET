@@ -15,3 +15,11 @@ class MidiFile(models.Model):
 
     def __unicode__(self): 
         return self.name
+    
+class StrumEvent(models.Model):
+    midi_file = models.ForeignKey(MidiFile, on_delete=models.CASCADE, related_name='strum_events')
+    correct = models.BooleanField()
+    timing = models.FloatField()
+
+    def __unicode__(self):
+        return f"StrumEvent for {self.midi_file.name}"

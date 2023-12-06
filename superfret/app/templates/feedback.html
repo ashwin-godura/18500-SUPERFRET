@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback</title>
+</head>
+<body>
+    <h1>Feedback for MidiFile: {{ midi_file_instance.name }}</h1>
+
+    <h2>Timing vs StrumEvent ID for Correct StrumEvents</h2>
+    <img src="{{ timing_plot }}" alt="Timing vs StrumEvent ID for Correct StrumEvents">
+
+    <h2>Total Strums vs StrumEvent ID for Correct StrumEvents</h2>
+    <img src="{{ total_strums_plot }}" alt="Total Strums vs StrumEvent ID for Correct StrumEvents">
+</body>
+</html>
