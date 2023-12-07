@@ -21,16 +21,25 @@ NOTE_FILE_METADATA_t parseNoteFile(uint8_t *noteFile) {
   assert(file_length < MAX_NOTE_FILE_SIZE); // sanity checking
   i += 4;
   uint32_t tempo_BPM = parse_uint32_t(&noteFile[i]);
-  Serial.print("Temp BPM: ");
+  Serial.print("Tempo BPM: ");
   Serial.println(tempo_BPM);
   assert(0 < tempo_BPM);   // conservative bounds for sanity checking the BPM
   assert(tempo_BPM < 500); // conservative bounds for sanity checking the BPM
   i += 4;
+  
   uint32_t mode = parse_uint32_t(&noteFile[i]);
   Serial.print("metadata.mode: ");
   Serial.println(mode);
   assert(mode == 0 or mode == 1);
   i += 4;
+
+  uint32_t met_volume = parse_uint32_t(&noteFile[i]);
+  Serial.print("Volume: ");
+  Serial.println(met_volume);
+  assert(0 <= met_volume);   // conservative bounds for sanity checking the volume
+  assert(met_volume <= 10); // conservative bounds for sanity checking the volume
+  i += 4;
+  
   while (i < file_length) {
     notes[NUM_NOTES_FOUND].startTime = parse_uint32_t(&noteFile[i]);
     i += 4;
@@ -53,6 +62,7 @@ NOTE_FILE_METADATA_t parseNoteFile(uint8_t *noteFile) {
 
   NOTE_FILE_METADATA_t metadata;
   metadata.tempo_BPM = tempo_BPM;
+  metadata.metronome_volume = met_volume;
   metadata.mode = mode ? TRAINING : PERFORMANCE;
   return metadata;
 }

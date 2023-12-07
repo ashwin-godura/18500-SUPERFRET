@@ -396,10 +396,10 @@ void loop() {
             first_strum = false;
 
             uint32_t tempo_ms_per_beat = 60.0e3 / (double)metadata.tempo_BPM;
+            uint32_t mapped_volume = map_metronome_volume(metadata.metronome_volume);
             buzzer = start_Buzzer(
-              tempo_ms_per_beat, BUZZER_VOLUME,
-              BUZZER_ON_TIME_ms);  // UPDATE LINE WITH ACTUAL TIME BETWEEN NOTES
-                                   // AND WITH ON TIME/VOLUME
+              tempo_ms_per_beat, mapped_volume,
+              BUZZER_ON_TIME_ms);
           }
           long long delta_ms = (signed long)time_since_first_strum_ms - (signed long)current_note_starttime_ms;
 

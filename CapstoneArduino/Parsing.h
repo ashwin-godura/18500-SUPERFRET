@@ -13,6 +13,7 @@ enum USER_MODE { TRAINING, PERFORMANCE };
 
 typedef struct {
   uint32_t tempo_BPM;
+  uint32_t metronome_volume;
   USER_MODE mode;
 } NOTE_FILE_METADATA_t;
 

@@ -15,4 +15,5 @@ BUZZER_t start_Buzzer(uint32_t buzzer_delay_ms, uint8_t buzzer_volume,
                       uint32_t on_time_ms);
 void run_Buzzer(BUZZER_t buzzer, uint32_t currentTime_ms);
 void turn_off_Buzzer(BUZZER_t buzzer);
+uint32_t map_metronome_volume(uint32_t metronome_volume);
 #endif // _CAPSTONE_BUZZER_

@@ -15,7 +15,7 @@
 #define FRETBOARD_SAMPLING_PERIOD_ms 10 // [ms]
 #define MIN_TIME_BETWEEN_STRUMS_ms 100  // [ms]
 #define LED_OFF_TIME_ms 75              // [ms]
-#define BUZZER_VOLUME 100               // [50-255]
+#define BUZZER_VOLUME 100               // [50-255]  Not used anymore
 #define BUZZER_ON_TIME_ms 30            // [ms]
 #define BUZZER_TIME_OFFSET_ms 0         // [ms] Higher means beep comes earlier
 
